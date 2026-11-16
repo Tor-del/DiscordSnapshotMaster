@@ -166,16 +166,25 @@ try
     var missingMediaDirectory = Path.Combine(root, "Недоступное вложение");
     var missingMediaId = Guid.NewGuid().ToString("N");
     server.AttachmentUnavailable = true;
+    server.ThreadUnavailable = true;
     var missingMedia = await importer.StartInDirectoryAsync(client, "1", ["30"], missingMediaDirectory, 0, _ => { },
         timeout.Token, operationId: missingMediaId);
-    Expect(missingMedia.Incomplete && SnapshotImporter.InspectProgress(missingMediaDirectory) is { FailedFiles: 1 },
-        "недоступное вложение остаётся в очереди и доступно для пропуска");
+    Expect(missingMedia.Incomplete && SnapshotImporter.InspectProgress(missingMediaDirectory) is { FailedFiles: 1, HasChannelErrors: true },
+        "недоступное вложение и ошибка ветки доступны для обработки");
     var attachmentRequests = server.AttachmentRequests;
-    Expect(SnapshotImporter.SkipFailedFiles(missingMediaDirectory, missingMediaId) == 1 &&
-        SnapshotImporter.SkipFailedFiles(missingMediaDirectory, missingMediaId) == 0,
-        "пропуск учитывает только ошибочные файлы и безопасен при повторе");
-    Expect(SnapshotImporter.InspectProgress(missingMediaDirectory) is { Incomplete: false, FailedFiles: 0 } ready && ready.CopiedAt.ContainsKey("30"),
-        "отсутствующее вложение больше не блокирует завершение копирования");
+    var issues = SnapshotImporter.InspectCopyIssues(missingMediaDirectory);
+    var fileIssue = issues.Single(issue => issue.IsFile);
+    var threadIssue = issues.Single(issue => !issue.IsFile);
+    Expect(fileIssue.Title == "file.txt" && fileIssue.Context!.Contains("русский канал") && fileIssue.Error.Contains("HTTP 404") &&
+        threadIssue.Id == "31" && threadIssue.Title == "Архивная ветка", "в списке ошибок указаны исходное имя файла, канал и ветка");
+    SnapshotImporter.SkipCopyIssues(missingMediaDirectory, missingMediaId, [fileIssue]);
+    Expect(SnapshotImporter.InspectCopyIssues(missingMediaDirectory).Single().Id == "31" &&
+        SnapshotImporter.InspectProgress(missingMediaDirectory) is { Incomplete: true, FailedFiles: 0 },
+        "пропуск файла не убирает из очереди непомеченную ветку");
+    SnapshotImporter.SkipCopyIssues(missingMediaDirectory, missingMediaId, [threadIssue]);
+    Expect(SnapshotImporter.InspectProgress(missingMediaDirectory) is { Incomplete: false, FailedFiles: 0, HasChannelErrors: false } ready &&
+        ready.CopiedAt.ContainsKey("30") && SnapshotImporter.InspectCopyIssues(missingMediaDirectory).Length == 0,
+        "пропуск ветки и файла позволяет завершить здоровый родительский канал");
     log.Clear();
     var skippedCheck = await SnapshotImporter.CheckAsync(missingMediaDirectory, log.Add, timeout.Token);
     Expect(skippedCheck is { Incomplete: false, DamagedFiles: 0, SkippedFiles: 1 } &&
@@ -224,6 +233,7 @@ internal sealed class FakeDiscord : HttpMessageHandler
     public string? NewRootMessageId { get; set; }
     public bool RefreshedAttachment { get; private set; }
     public bool AttachmentUnavailable { get; set; }
+    public bool ThreadUnavailable { get; set; }
     public int AttachmentRequests { get; private set; }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellation)
@@ -281,6 +291,7 @@ internal sealed class FakeDiscord : HttpMessageHandler
         if (path == "channels/31/messages")
         {
             ThreadRequests++;
+            if (ThreadUnavailable) return Json("{}", HttpStatusCode.Forbidden);
             if (NewRootMessageId is not { } rootId) return Json("[]");
             var threadId = (ulong.Parse(rootId) + 1).ToString();
             return Json(url.Query.StartsWith($"?before={threadId}&", StringComparison.Ordinal) ? "[]" : $"[{Message(threadId, null)}]");

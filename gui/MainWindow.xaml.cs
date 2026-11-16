@@ -32,6 +32,9 @@ public partial class MainWindow : Window
     private int journalLines;
     private bool Busy => operation is not null;
     private bool CanCheckArchive => !Busy && archiveReady && File.Exists(Path.Combine(project.DirectoryPath, "snapshot.sqlite"));
+    private ArchiveProgress? CurrentCopy => project.CanResume && project.Archive is { } progress && project.IsCurrentCopy(progress)
+        ? progress : null;
+    private static bool HasCopyIssues(ArchiveProgress? progress) => progress is { HasChannelErrors: true } or { FailedFiles: > 0 };
     internal bool ReturnToPicker { get; private set; }
 
     internal MainWindow(ProjectFile project, ProjectPicker picker, SshProject? remote = null)
@@ -79,7 +82,7 @@ public partial class MainWindow : Window
     {
         private bool isChecked;
         public ChannelChoice Channel { get; } = channel;
-        public bool CanSelect { get; } = available || pending;
+        public bool CanSelect { get; } = available;
         public bool IsArchived => copiedAt.HasValue;
         public string Detail => pending ? Strings.Get("ChannelCopyPending")
             : copiedAt is { } date ? Strings.Get("ChannelCopiedAt", date.ToLocalTime()) : Channel.KindLabel;
@@ -154,15 +157,10 @@ public partial class MainWindow : Window
         var selectAllLabel = Strings.Get(project.Status == ProjectStatus.Completed ? "UiSelectNewChannels" : "UiSelectAll");
         SelectAllButton.ToolTip = selectAllLabel;
         AutomationProperties.SetName(SelectAllButton, selectAllLabel);
-        SelectAllButton.IsEnabled = !Busy && Channels.Items.OfType<ChannelRow>().Any(row => row.CanSelect && (project.CanResume || !row.IsArchived) && !row.IsChecked);
+        SelectAllButton.IsEnabled = !Busy && Channels.Items.OfType<ChannelRow>().Any(row => row.CanSelect && !row.IsArchived && !row.IsChecked);
         ClearButton.IsEnabled = !Busy && selected > 0;
-        SkipCopyButton.Visibility = project.CanResume && channelRows.Any(row => row.CanSelect) ? Visibility.Visible : Visibility.Collapsed;
-        MarkCopiedButton.Visibility = project.Archive is { } progress && project.IsCurrentCopy(progress)
-            ? SkipCopyButton.Visibility : Visibility.Collapsed;
-        SkipCopyButton.IsEnabled = MarkCopiedButton.IsEnabled = !Busy && selected > 0;
-        SkipFailedFilesButton.Visibility = project.CanResume && project.Archive is { FailedFiles: > 0 } failed && project.IsCurrentCopy(failed)
+        CopyIssuesLink.Visibility = !Busy && HasCopyIssues(CurrentCopy)
             ? Visibility.Visible : Visibility.Collapsed;
-        SkipFailedFilesButton.IsEnabled = !Busy;
         CopyButton.Content = copying ? Strings.Get("Pause") : project.CanResume ? Strings.Get("Resume")
             : Strings.Get(project.Status == ProjectStatus.Completed ? "UiSyncChannels" : "UiStart");
         CopyButton.IsEnabled = copying ? operation is { IsCancellationRequested: false }
@@ -259,7 +257,8 @@ public partial class MainWindow : Window
         ConnectionText.Text = Strings.Get("UiDisconnected");
     }
 
-    private async Task RunAsync<T>(string status, Func<CancellationToken, Task<T>> run, Func<T, string> complete, bool isCopy = false)
+    private async Task RunAsync<T>(string status, Func<CancellationToken, Task<T>> run, Func<T, string> complete,
+        bool isCopy = false, Action<Exception>? onError = null)
     {
         using var cancellation = new CancellationTokenSource();
         operation = cancellation;
@@ -278,6 +277,7 @@ public partial class MainWindow : Window
         catch (Exception error)
         {
             StatusText.Text = Clean(error.Message);
+            onError?.Invoke(error);
         }
         finally
         {
@@ -383,75 +383,101 @@ public partial class MainWindow : Window
 
     private async void CopyClick(object sender, RoutedEventArgs e)
     {
-        if (copying) Stop();
-        else if (project.CanResume) await ResumeCopyAsync();
-        else await StartCopyAsync();
-    }
-
-    private async void ResolveChannelCopiesClick(object sender, RoutedEventArgs e)
-    {
-        if (Busy || !project.CanResume) return;
-        var selected = channelRows.Where(row => row.CanSelect && row.IsChecked).Select(row => row.Channel.Id).ToHashSet();
-        if (selected.Count == 0) return;
-
-        var markComplete = sender == MarkCopiedButton;
-        var progress = project.Archive;
-        var started = progress is not null && project.IsCurrentCopy(progress);
-        if (markComplete && !started) return;
-        var title = Strings.Get(markComplete ? "UiMarkCopied" : "UiSkipChannelCopy");
-        var question = Strings.Get(markComplete ? "ConfirmMarkCopied" : "ConfirmSkipChannelCopy", selected.Count);
-        if (MessageBox.Show(this, question, title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-
-        StopViewer();
-        await RunAsync(title, async cancellation =>
+        if (copying)
         {
-            if (started)
-            {
-                SnapshotImporter.ResolveChannelCopies(project.DirectoryPath, progress!.OperationId, selected, markComplete);
-                project.RefreshArchive();
-                if (project.Archive is { Incomplete: false }) project.Complete();
-            }
-            else project.SkipPlannedChannels(selected);
+            Stop();
+            return;
+        }
 
-            var message = Strings.Get(markComplete ? "MarkedChannelsCopied" : "SkippedChannelCopies", selected.Count);
-            return await SyncCopyChangesAsync(message, cancellation);
-        }, message => message);
-        SetChannelRows();
-        RefreshControls();
+        var error = project.CanResume ? await ResumeCopyAsync() : await StartCopyAsync();
+        if (error is not null) await ReviewCopyIssuesAsync(error);
     }
 
-    private async void SkipFailedFilesClick(object sender, RoutedEventArgs e)
-    {
-        if (Busy || !project.CanResume || project.Archive is not { FailedFiles: > 0 } progress || !project.IsCurrentCopy(progress)) return;
-        var title = Strings.Get("UiSkipFailedFiles");
-        if (MessageBox.Show(this, Strings.Get("ConfirmSkipFailedFiles", progress.FailedFiles), title,
-                MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+    private async void CopyIssuesClick(object sender, RoutedEventArgs e) => await ReviewCopyIssuesAsync();
 
+    private async Task ReviewCopyIssuesAsync(Exception? error = null)
+    {
+        while (!Busy && !closeWhenReady)
+        {
+            var progress = CurrentCopy;
+            CopyIssue[] issues = [];
+            if (HasCopyIssues(progress))
+            {
+                try { issues = SnapshotImporter.InspectCopyIssues(project.DirectoryPath); }
+                catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    error = failure;
+                }
+            }
+            else if (progress is null && error is ChannelSelectionUnavailableException unavailable && project.Settings is { } settings)
+            {
+                issues = settings.Channels.Where(channel => unavailable.ChannelIds.Contains(channel.Id))
+                    .Select(channel => new CopyIssue(channel.Id, channel.Title, null, Strings.Get("BotCannotReadChannel"), IsFile: false)).ToArray();
+            }
+            if (issues.Length == 0 && error is null) return;
+            var dialog = new CopyIssuesDialog(issues, error is null ? null : Clean(error.Message), project.CanResume && CopyButton.IsEnabled) { Owner = this };
+            if (dialog.ShowDialog() != true)
+            {
+                StatusText.Text = Strings.Get("CopyPaused");
+                AppendLog(StatusText.Text);
+                return;
+            }
+            if (dialog.Retry)
+            {
+                error = await ResumeCopyAsync();
+                if (error is null) return;
+            }
+            else
+            {
+                error = await SkipCopyIssuesAsync(progress, dialog.SelectedIssues);
+                if (error is null && !closeWhenReady && project.CanResume && CopyButton.IsEnabled && !HasCopyIssues(CurrentCopy))
+                {
+                    error = await ResumeCopyAsync();
+                    if (error is null) return;
+                }
+            }
+        }
+    }
+
+    private async Task<Exception?> SkipCopyIssuesAsync(ArchiveProgress? progress, CopyIssue[] issues)
+    {
+        Exception? error = null;
         StopViewer();
-        await RunAsync(title, async cancellation =>
+        await RunAsync(Strings.Get("UiSkipSelectedIssues"), async cancellation =>
         {
             cancellation.ThrowIfCancellationRequested();
-            var count = SnapshotImporter.SkipFailedFiles(project.DirectoryPath, progress.OperationId);
-            project.RefreshArchive();
-            var complete = project.Archive is { Incomplete: false };
-            if (complete) project.Complete();
-            return await SyncCopyChangesAsync(Strings.Get(complete ? "CopyFinishedWithSkippedFiles" : "SkippedFilesWithPendingCopy", count), cancellation);
-        }, message => message);
+            if (progress is null)
+                project.SkipPlannedChannels(issues.Select(issue => issue.Id).ToHashSet());
+            else
+            {
+                try { SnapshotImporter.SkipCopyIssues(project.DirectoryPath, progress.OperationId, issues); }
+                finally { project.RefreshArchive(); }
+                if (project.Archive is { Incomplete: false }) project.Complete();
+            }
+            var state = project.Status switch
+            {
+                ProjectStatus.Completed => "CopyFinishedAfterSkip",
+                ProjectStatus.New => "CopyIssuesAllSkipped",
+                _ => "CopyIssuesSkipped",
+            };
+            return await SyncCopyChangesAsync(Strings.Get(state, issues.Length), cancellation);
+        }, message => message, onError: failure => error = failure);
         SetChannelRows();
         RefreshControls();
+        return error;
     }
 
-    private async Task StartCopyAsync()
+    private async Task<Exception?> StartCopyAsync()
     {
         if (Busy || discord is not { } client ||
             connectedToken is not { } token || Servers.SelectedItem is not DiscordServer server ||
-            !ReadIntervals(out var apiInterval, out var cdnInterval)) return;
+            !ReadIntervals(out var apiInterval, out var cdnInterval)) return null;
         var channels = channelRows.Where(row => row.CanSelect && row.IsChecked).Select(row => row.Channel).ToArray();
-        if (channels.Length == 0 || new CopyConfirmation(server, channels, project.Archive?.CopiedAt) { Owner = this }.ShowDialog() != true) return;
+        if (channels.Length == 0 || new CopyConfirmation(server, channels, project.Archive?.CopiedAt) { Owner = this }.ShowDialog() != true) return null;
         client.IntervalMs = apiInterval;
         var settings = new CopySettings(server, channels, apiInterval, cdnInterval, token, Guid.NewGuid().ToString("N"));
         var existingArchive = project.Status == ProjectStatus.Completed;
-        await RunCopyAsync(Strings.Get("CopyingChannels"), async cancellation =>
+        return await RunCopyAsync(Strings.Get("CopyingChannels"), async cancellation =>
         {
             project.SaveSettings(settings);
             return existingArchive ? await CopyChannelsAsync(client, settings, cancellation)
@@ -459,12 +485,12 @@ public partial class MainWindow : Window
         });
     }
 
-    private async Task ResumeCopyAsync()
+    private async Task<Exception?> ResumeCopyAsync()
     {
-        if (Busy || !ReadIntervals(out var apiInterval, out var cdnInterval)) return;
+        if (Busy || !ReadIntervals(out var apiInterval, out var cdnInterval)) return null;
         var replacement = TokenBox.Password.Trim();
         var connectedClient = discord;
-        await RunCopyAsync(Strings.Get("ResumingCopy"), async cancellation =>
+        return await RunCopyAsync(Strings.Get("ResumingCopy"), async cancellation =>
         {
             var progress = SnapshotImporter.InspectProgress(project.DirectoryPath);
             if (progress is not null) MarkArchiveReady();
@@ -505,21 +531,25 @@ public partial class MainWindow : Window
         importer.CopyChannelsAsync(client, project.DirectoryPath, settings.Channels.Select(channel => channel.Id).ToArray(),
             settings.OperationId, settings.CdnInterval, ReportLog, cancellation);
 
-    private Task RunCopyAsync(string status, Func<CancellationToken, Task<ImportResult>> run)
+    private async Task<Exception?> RunCopyAsync(string status, Func<CancellationToken, Task<ImportResult>> run)
     {
+        Exception? error = null;
         StopViewer();
-        return RunAsync(status, async cancellation =>
+        await RunAsync(status, async cancellation =>
         {
             ImportResult result;
             try { result = await run(cancellation); }
             finally { project.RefreshArchive(); }
             if (!result.Incomplete) project.Complete();
-            return await SyncCopyChangesAsync(Strings.Get(result.Incomplete ? "ArchiveHasGaps" : "CopyFinished"), cancellation);
-        }, message =>
+            var message = await SyncCopyChangesAsync(Strings.Get(result.Incomplete ? "ArchiveHasGaps" : "CopyFinished"), cancellation);
+            return (Result: result, Message: message);
+        }, outcome =>
         {
             TokenBox.Clear();
-            return message;
-        }, isCopy: true);
+            if (outcome.Result.Incomplete) error = new InvalidOperationException(outcome.Message);
+            return outcome.Message;
+        }, isCopy: true, onError: failure => error = failure);
+        return error;
     }
 
     private async Task<string> SyncCopyChangesAsync(string message, CancellationToken cancellation)
@@ -551,41 +581,19 @@ public partial class MainWindow : Window
         });
     }
 
-    private void WebUiClick(object sender, RoutedEventArgs e)
+    private async void WebUiClick(object sender, RoutedEventArgs e)
     {
+        if (Busy) return;
         var install = WebUiCheckBox.IsChecked == true;
         if (!install) StopViewer();
-        var title = install ? Strings.Get("AddingViewer") : Strings.Get("RemovingViewer");
-        var panel = new StackPanel { Margin = new Thickness(20) };
-        panel.Children.Add(new TextBlock { Text = title });
-        panel.Children.Add(new ProgressBar { Height = 5, Margin = new Thickness(0, 14, 0, 0), IsIndeterminate = true });
-        var dialog = new Window
+        await RunAsync(Strings.Get(install ? "AddingViewer" : "RemovingViewer"), cancellation =>
         {
-            Owner = this, Title = Strings.Get("ArchiveViewer"), Content = panel,
-            Width = 360, SizeToContent = SizeToContent.Height, ShowInTaskbar = false,
-            ResizeMode = ResizeMode.NoResize, WindowStartupLocation = WindowStartupLocation.CenterOwner,
-        };
-
-        var finished = false;
-        Exception? failure = null;
-        dialog.Closing += (_, args) => args.Cancel = !finished;
-        dialog.Loaded += async (_, _) =>
-        {
-            try { await Task.Run(() => ArchiveWebUi.SetInstalled(project.DirectoryPath, install)); }
-            catch (Exception error) { failure = error; }
-            finally
-            {
-                finished = true;
-                dialog.Close();
-            }
-        };
-        dialog.ShowDialog();
+            cancellation.ThrowIfCancellationRequested();
+            ArchiveWebUi.SetInstalled(project.DirectoryPath, install);
+            return Task.FromResult(Strings.Get(install ? "ViewerAdded" : "ViewerRemoved"));
+        }, message => message);
         WebUiCheckBox.IsChecked = ArchiveWebUi.IsInstalled(project.DirectoryPath);
         RefreshControls();
-        if (failure is not null)
-            MessageBox.Show(this, failure.Message, dialog.Title, MessageBoxButton.OK, MessageBoxImage.Error);
-        else
-            AppendLog(install ? Strings.Get("ViewerAdded") : Strings.Get("ViewerRemoved"));
     }
 
     private void OpenProjectFolderClick(object sender, RoutedEventArgs e) => App.OpenInShell(this, project.DirectoryPath);
@@ -691,7 +699,7 @@ public partial class MainWindow : Window
     private void InputsChanged(object sender, RoutedEventArgs e) => RefreshControls();
     private void SelectAllClick(object sender, RoutedEventArgs e)
     {
-        foreach (var row in Channels.Items.OfType<ChannelRow>().Where(row => row.CanSelect && (project.CanResume || !row.IsArchived)))
+        foreach (var row in Channels.Items.OfType<ChannelRow>().Where(row => row.CanSelect && !row.IsArchived))
             row.IsChecked = true;
         RefreshControls();
     }

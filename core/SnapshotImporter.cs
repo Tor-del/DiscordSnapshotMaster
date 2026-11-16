@@ -13,6 +13,13 @@ public sealed record ArchiveProgress(DiscordServer Server, ChannelChoice[] Chann
 {
     public int FailedFiles { get; init; }
     public int SkippedFiles { get; init; }
+    public bool HasChannelErrors { get; init; }
+}
+public sealed record CopyIssue(string Id, string Title, string? Context, string Error, bool IsFile);
+public sealed class ChannelSelectionUnavailableException(IReadOnlySet<string> channelIds)
+    : InvalidOperationException(Strings.Get("ChannelSelectionUnavailable"))
+{
+    public IReadOnlySet<string> ChannelIds { get; } = channelIds;
 }
 
 public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, CancellationToken, Task>? publishMedia = null)
@@ -59,6 +66,18 @@ public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, Ca
     {
         using var archive = new ArchiveStore(directory);
         return archive.SkipFailedFiles(operationId);
+    }
+
+    public static CopyIssue[] InspectCopyIssues(string directory)
+    {
+        using var archive = new ArchiveStore(directory, readOnly: true);
+        return archive.ReadCopyIssues();
+    }
+
+    public static void SkipCopyIssues(string directory, string operationId, IReadOnlyCollection<CopyIssue> issues)
+    {
+        using var archive = new ArchiveStore(directory);
+        archive.SkipCopyIssues(operationId, issues);
     }
 
     public static void EnsureViewerCompose(string directory)
@@ -129,7 +148,8 @@ public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, Ca
         var ids = channelIds.ToHashSet();
         if (ids.Count == 0) throw new InvalidOperationException(Strings.Get("SelectChannels"));
         var channels = selection.Readable.Where(channel => ids.Contains(channel.Id)).ToArray();
-        if (channels.Length != ids.Count) throw new InvalidOperationException(Strings.Get("ChannelSelectionUnavailable"));
+        if (channels.Length != ids.Count)
+            throw new ChannelSelectionUnavailableException(ids.Except(channels.Select(channel => channel.Id)).ToHashSet());
         return channels;
     }
 

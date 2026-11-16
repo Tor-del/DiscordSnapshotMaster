@@ -282,12 +282,6 @@
                 </WrapPanel.Resources>
                 <Button x:Name="CopyButton" Content="{DynamicResource UiStart}" Click="CopyClick" MinWidth="135" Margin="0,0,8,0"
                         Background="{StaticResource Accent}" BorderBrush="{StaticResource Accent}" Foreground="#10232D" />
-                <Button x:Name="SkipCopyButton" Content="{DynamicResource UiSkipChannelCopy}" Click="ResolveChannelCopiesClick"
-                        Visibility="Collapsed" Margin="0,0,8,0" />
-                <Button x:Name="MarkCopiedButton" Content="{DynamicResource UiMarkCopied}" Click="ResolveChannelCopiesClick"
-                        Visibility="Collapsed" Margin="0,0,8,0" />
-                <Button x:Name="SkipFailedFilesButton" Content="{DynamicResource UiSkipFailedFiles}" Click="SkipFailedFilesClick"
-                        Visibility="Collapsed" Margin="0,0,8,0" />
                 <Button x:Name="SshSaveButton" Click="SshSaveClick" Style="{StaticResource IconButton}"
                         ToolTip="{DynamicResource UiSshSave}" AutomationProperties.Name="{DynamicResource UiSshSave}"
                         Margin="0,0,8,0" Visibility="Collapsed">
@@ -320,8 +314,15 @@
                 <Button x:Name="AuthorizationSettingsButton" Content="{DynamicResource UiAuthorizationSettings}"
                         Style="{StaticResource FooterButton}" Click="AuthorizationSettingsClick" Margin="12,0,0,0" Visibility="Collapsed" />
             </StackPanel>
-            <TextBlock x:Name="StatusText" TextTrimming="CharacterEllipsis"
-                       AutomationProperties.LiveSetting="Polite" Foreground="{StaticResource Secondary}" />
+            <DockPanel>
+                <TextBlock x:Name="CopyIssuesLink" DockPanel.Dock="Right" Margin="12,0,0,0" Visibility="Collapsed">
+                    <Hyperlink Click="CopyIssuesClick" Foreground="{StaticResource Accent}">
+                        <Run Text="{DynamicResource UiShowCopyIssues}" />
+                    </Hyperlink>
+                </TextBlock>
+                <TextBlock x:Name="StatusText" TextTrimming="CharacterEllipsis"
+                           AutomationProperties.LiveSetting="Polite" Foreground="{StaticResource Secondary}" />
+            </DockPanel>
         </DockPanel>
     </Grid>
 </Window>

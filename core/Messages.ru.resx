@@ -236,20 +236,22 @@
   <data name="SshDatabaseJournal" xml:space="preserve"><value>На сервере есть файл журнала или WAL SQLite. Завершите запись в архив, затем повторите попытку.</value></data>
   <data name="SshCopySyncFailed" xml:space="preserve"><value>{0} Синхронизация не удалась. {1}</value></data>
   <data name="UiOAuthRedirectSteps" xml:space="preserve"><value>1. Определите адрес, по которому будут открывать архив. Для локального просмотра используйте http://127.0.0.1:8080/auth/callback. Для публичного просмотра добавьте /auth/callback к HTTPS-адресу сайта, например https://archive.example.org/auth/callback.&#10;2. Откройте Discord Developer Portal. Выберите приложение или нажмите New Application. В разделе OAuth2 скопируйте Client ID и Client Secret. При необходимости создайте секрет там же.&#10;3. В OAuth2 → Redirects нажмите Add Redirect, вставьте полный URI из шага 1 и сохраните изменения. Укажите ниже точно такой же URI, включая схему, адрес, порт, если он используется, и путь /auth/callback.&#10;4. Сохраните настройки, откройте просмотрщик по выбранному адресу и нажмите «Войти через Discord».</value></data>
-  <data name="UiSkipChannelCopy" xml:space="preserve"><value>Пропустить выбранные</value></data>
-  <data name="UiMarkCopied" xml:space="preserve"><value>Отметить скопированными</value></data>
-  <data name="ConfirmSkipChannelCopy" xml:space="preserve"><value>Пропустить выбранные каналы ({0}) и их ветки? Сохранённые сообщения и файлы останутся в архиве. Эти каналы можно выбрать снова при следующем копировании.</value></data>
-  <data name="ConfirmMarkCopied" xml:space="preserve"><value>Отметить выбранные каналы ({0}) и их ветки скопированными? При следующем обновлении история будет загружаться с границы текущего копирования. Пропущенные сообщения до этой границы останутся за пределами архива.</value></data>
-  <data name="SkippedChannelCopies" xml:space="preserve"><value>Пропущено каналов: {0}.</value></data>
-  <data name="MarkedChannelsCopied" xml:space="preserve"><value>Отмечено скопированными каналов: {0}.</value></data>
   <data name="ChannelCopyPending" xml:space="preserve"><value>В очереди текущего копирования</value></data>
   <data name="ChannelCopySkipped" xml:space="preserve"><value>Оставшаяся история пропущена пользователем.</value></data>
   <data name="ChannelManuallyCompleted" xml:space="preserve"><value>История отмечена пользователем как скопированная.</value></data>
   <data name="CopySelectionChanged" xml:space="preserve"><value>Список каналов для копирования изменился. Откройте проект заново и повторите попытку.</value></data>
-  <data name="UiSkipFailedFiles" xml:space="preserve"><value>Пропустить ошибочные файлы</value></data>
-  <data name="ConfirmSkipFailedFiles" xml:space="preserve"><value>Пропустить файлы, которые завершились ошибкой загрузки ({0})? Сохранённые сообщения и файлы останутся в архиве. Пропуски и причины ошибок будут указаны в отчёте проверки.</value></data>
   <data name="CopyFinishedWithSkippedFiles" xml:space="preserve"><value>Копирование завершено. Пропущено файлов: {0}.</value></data>
-  <data name="SkippedFilesWithPendingCopy" xml:space="preserve"><value>Пропущено файлов: {0}. В очереди остались другие элементы.</value></data>
   <data name="FileSkipped" xml:space="preserve"><value>Пропущен пользователем. {0}</value></data>
   <data name="ArchivePassedWithSkippedFiles" xml:space="preserve"><value>SQLite и сохранённые файлы прошли проверку. Пропущено файлов: {0}.</value></data>
+  <data name="UiCopyIssues" xml:space="preserve"><value>Ошибки копирования</value></data>
+  <data name="UiShowCopyIssues" xml:space="preserve"><value>Показать ошибки копирования</value></data>
+  <data name="UiSkipSelectedIssues" xml:space="preserve"><value>Пропустить отмеченное</value></data>
+  <data name="UiRetryCopy" xml:space="preserve"><value>Повторить копирование</value></data>
+  <data name="UiCancelKeepsProgress" xml:space="preserve"><value>При отмене попытка остановится, а сохранённые данные останутся в архиве.</value></data>
+  <data name="CopyIssuesSummary" xml:space="preserve"><value>Оставьте галочки у каналов и файлов, которые хотите пропустить, или повторите копирование.</value></data>
+  <data name="CopyIssueChannel" xml:space="preserve"><value>Канал · {0}</value></data>
+  <data name="CopyIssueFile" xml:space="preserve"><value>Файл · {0}</value></data>
+  <data name="CopyFinishedAfterSkip" xml:space="preserve"><value>Копирование завершено. Пропущено за этот шаг: {0}.</value></data>
+  <data name="CopyIssuesSkipped" xml:space="preserve"><value>Пропущено: {0}. В очереди остались другие элементы.</value></data>
+  <data name="CopyIssuesAllSkipped" xml:space="preserve"><value>Пропущено каналов: {0}. Копирование отменено.</value></data>
 </root>

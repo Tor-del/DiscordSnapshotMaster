@@ -44,6 +44,7 @@ internal sealed class ArchiveStore : IDisposable
     private const string ChannelColumns = "SELECT id, parent_id, name, type, selected, cursor, copied_through FROM channels";
     private const string AssetColumns = "SELECT id, kind, url, path, expected_bytes, channel_id, message_id, sha256, error FROM assets";
     private const string HasHistoryGaps = "SELECT EXISTS(SELECT 1 FROM channels WHERE history_done = 0 OR discovery_done = 0)";
+    private const string ChannelErrors = "(history_done = 0 AND history_error IS NOT NULL) OR (discovery_done = 0 AND discovery_error IS NOT NULL)";
     private const string HasPendingCopy = "SELECT EXISTS(SELECT 1 FROM channels WHERE pending_copy = 1)";
     private readonly Sqlite db;
 
@@ -123,6 +124,7 @@ internal sealed class ArchiveStore : IDisposable
         {
             FailedFiles = failedFiles,
             SkippedFiles = CountSkippedFiles(database),
+            HasChannelErrors = database.Query($"SELECT EXISTS(SELECT 1 FROM channels WHERE {ChannelErrors})", row => row.Flag(0)).Single(),
         };
     }
 
@@ -223,24 +225,74 @@ internal sealed class ArchiveStore : IDisposable
         var skipped = 0;
         db.Transaction(() =>
         {
-            var currentOperation = db.Query("SELECT copy_id FROM snapshot WHERE id = 1", row => row.Text(0)).Single();
-            if (currentOperation != operationId) throw new InvalidOperationException(Strings.Get("CopySelectionChanged"));
+            CheckOperation(operationId);
 
             var filter = PendingAssetFilter(db) + " AND error IS NOT NULL";
             skipped = db.Query($"SELECT count(*) FROM assets WHERE {filter}", row => (int)row.Number(0)).Single();
             if (skipped == 0) return;
 
-            // Optional in version 2 so existing archives can be opened without a schema migration.
-            db.Execute("""
-                CREATE TABLE IF NOT EXISTS skipped_assets (
-                  asset_id TEXT NOT NULL PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE
-                )
-                """);
+            EnsureSkippedAssets();
             db.Execute($"INSERT INTO skipped_assets SELECT id FROM assets WHERE {filter}");
             FinishCopy(Snapshot.Cutoff);
         });
         return skipped;
     }
+
+    public CopyIssue[] ReadCopyIssues()
+    {
+        var channels = db.Query($"""
+            SELECT c.id, c.name, p.name, c.history_error, c.discovery_error
+            FROM channels c LEFT JOIN channels p ON c.selected = 0 AND c.parent_id = p.id
+            WHERE c.id IN (SELECT id FROM channels WHERE {ChannelErrors}) ORDER BY c.name, c.id
+            """, row => new CopyIssue(row.Text(0)!, row.Text(1)!, row.Text(2),
+                string.Join(Environment.NewLine, new[] { row.Text(3), row.Text(4) }.OfType<string>()), IsFile: false));
+        var files = db.Query($"""
+            SELECT a.id, a.path, a.url, c.name, a.message_id, a.error FROM assets a
+            LEFT JOIN channels c ON c.id = a.channel_id
+            WHERE a.id IN (SELECT id FROM assets WHERE {PendingAssetFilter(db)} AND error IS NOT NULL) ORDER BY a.path
+            """, row =>
+        {
+            var path = row.Text(1)!;
+            var name = Uri.TryCreate(row.Text(2), UriKind.Absolute, out var url) ? Path.GetFileName(url.LocalPath) : null;
+            var context = row.Text(4) is { } message ? path + Strings.Get("MessageLocation", message, row.Text(3) ?? "") : path;
+            return new CopyIssue(row.Text(0)!, string.IsNullOrEmpty(name) ? path : name, context, row.Text(5)!, IsFile: true);
+        });
+        return channels.Concat(files).ToArray();
+    }
+
+    public void SkipCopyIssues(string operationId, IReadOnlyCollection<CopyIssue> issues)
+    {
+        db.Transaction(() =>
+        {
+            CheckOperation(operationId);
+            var active = ReadCopyIssues().Select(issue => (issue.IsFile, issue.Id)).ToHashSet();
+            if (issues.Any(issue => !active.Contains((issue.IsFile, issue.Id))))
+                throw new InvalidOperationException(Strings.Get("CopySelectionChanged"));
+
+            if (issues.Any(issue => issue.IsFile)) EnsureSkippedAssets();
+            foreach (var issue in issues.DistinctBy(issue => (issue.IsFile, issue.Id)))
+            {
+                if (issue.IsFile) db.Execute("INSERT INTO skipped_assets VALUES (?)", issue.Id);
+                else db.Execute("""
+                    UPDATE channels SET history_done = 1, discovery_done = 1, pending_copy = 0, note = ? WHERE id = ?
+                    """, Strings.Get("ChannelCopySkipped"), issue.Id);
+            }
+            FinishCopy(Snapshot.Cutoff);
+        });
+    }
+
+    private void CheckOperation(string operationId)
+    {
+        var currentOperation = db.Query("SELECT copy_id FROM snapshot WHERE id = 1", row => row.Text(0)).Single();
+        if (currentOperation != operationId) throw new InvalidOperationException(Strings.Get("CopySelectionChanged"));
+    }
+
+    // Optional in version 2 so existing archives can be opened without a schema migration.
+    private void EnsureSkippedAssets() => db.Execute("""
+        CREATE TABLE IF NOT EXISTS skipped_assets (
+          asset_id TEXT NOT NULL PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE
+        )
+        """);
 
     private void SaveAsset(MediaAsset entry, string? channelId = null, string? messageId = null) => db.Execute("""
         INSERT INTO assets (id, kind, url, path, expected_bytes, channel_id, message_id) VALUES (?, ?, ?, ?, ?, ?, ?)

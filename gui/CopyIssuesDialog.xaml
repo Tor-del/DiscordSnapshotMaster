@@ -1,0 +1,38 @@
+<Window x:Class="DiscordSnapshot.Gui.CopyIssuesDialog" x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource UiCopyIssues}" Width="660" Height="450" MinWidth="510" MinHeight="290"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip"
+        Language="{DynamicResource UiCulture}" FontFamily="Segoe UI Variable, Segoe UI"
+        Background="#20242B" Foreground="#F5F5F5">
+    <DockPanel Margin="24">
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <TextBlock Text="{DynamicResource UiCopyIssues}" FontSize="23" FontWeight="SemiBold" />
+            <TextBlock x:Name="Summary" TextWrapping="Wrap" Margin="0,8,0,0" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <TextBlock Text="{DynamicResource UiCancelKeepsProgress}" TextWrapping="Wrap" Margin="0,0,0,12" />
+            <WrapPanel HorizontalAlignment="Right">
+                <Button Content="{DynamicResource UiCancelCopy}" IsCancel="True" Padding="12,6" Margin="0,0,8,0" />
+                <Button x:Name="SkipButton" Content="{DynamicResource UiSkipSelectedIssues}" Click="SkipClick" Padding="12,6" Margin="0,0,8,0" />
+                <Button x:Name="RetryButton" Content="{DynamicResource UiRetryCopy}" Click="RetryClick" Padding="12,6"
+                        Style="{DynamicResource AccentButtonStyle}" />
+            </WrapPanel>
+        </StackPanel>
+        <ListBox x:Name="IssueList" AutomationProperties.Name="{DynamicResource UiCopyIssues}"
+                 HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox IsChecked="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Click="SelectionChanged"
+                              AutomationProperties.Name="{Binding Title}" AutomationProperties.HelpText="{Binding Detail}"
+                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top" Padding="4,6">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" Foreground="#D0D0D0" />
+                        </StackPanel>
+                    </CheckBox>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>
