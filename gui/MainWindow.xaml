@@ -282,6 +282,10 @@
                 </WrapPanel.Resources>
                 <Button x:Name="CopyButton" Content="{DynamicResource UiStart}" Click="CopyClick" MinWidth="135" Margin="0,0,8,0"
                         Background="{StaticResource Accent}" BorderBrush="{StaticResource Accent}" Foreground="#10232D" />
+                <Button x:Name="SkipCopyButton" Content="{DynamicResource UiSkipChannelCopy}" Click="ResolveChannelCopiesClick"
+                        Visibility="Collapsed" Margin="0,0,8,0" />
+                <Button x:Name="MarkCopiedButton" Content="{DynamicResource UiMarkCopied}" Click="ResolveChannelCopiesClick"
+                        Visibility="Collapsed" Margin="0,0,8,0" />
                 <Button x:Name="SshSaveButton" Click="SshSaveClick" Style="{StaticResource IconButton}"
                         ToolTip="{DynamicResource UiSshSave}" AutomationProperties.Name="{DynamicResource UiSshSave}"
                         Margin="0,0,8,0" Visibility="Collapsed">

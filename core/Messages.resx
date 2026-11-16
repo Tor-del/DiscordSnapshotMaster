@@ -236,4 +236,14 @@
   <data name="SshDatabaseJournal" xml:space="preserve"><value>The server has an active SQLite journal or WAL file. Close the process writing to the archive, then retry.</value></data>
   <data name="SshCopySyncFailed" xml:space="preserve"><value>{0} Synchronization failed. {1}</value></data>
   <data name="UiOAuthRedirectSteps" xml:space="preserve"><value>1. Choose the address visitors will use. For local viewing use http://127.0.0.1:8080/auth/callback. For a public viewer use its HTTPS address followed by /auth/callback, for example https://archive.example.org/auth/callback.&#10;2. Open the Discord Developer Portal and select an application, or choose New Application. In OAuth2, copy Client ID and Client Secret. Generate a secret there if needed.&#10;3. In OAuth2 → Redirects choose Add Redirect, paste the full URI from step 1 and save changes. Paste the exact same URI below, including the scheme, host, port if used, and /auth/callback.&#10;4. Save these settings, start the viewer at that address and select Sign in with Discord.</value></data>
+  <data name="UiSkipChannelCopy" xml:space="preserve"><value>Skip selected</value></data>
+  <data name="UiMarkCopied" xml:space="preserve"><value>Mark as copied</value></data>
+  <data name="ConfirmSkipChannelCopy" xml:space="preserve"><value>Skip the selected channels ({0}) and their threads? Saved messages and files will be kept. You can select these channels again in a later copy.</value></data>
+  <data name="ConfirmMarkCopied" xml:space="preserve"><value>Mark the selected channels ({0}) and their threads as copied? Future updates will start at this copy's cutoff. Any missing messages before that point will be skipped.</value></data>
+  <data name="SkippedChannelCopies" xml:space="preserve"><value>Skipped channels: {0}.</value></data>
+  <data name="MarkedChannelsCopied" xml:space="preserve"><value>Channels marked as copied: {0}.</value></data>
+  <data name="ChannelCopyPending" xml:space="preserve"><value>Pending in the current copy</value></data>
+  <data name="ChannelCopySkipped" xml:space="preserve"><value>The remaining history was skipped by the user.</value></data>
+  <data name="ChannelManuallyCompleted" xml:space="preserve"><value>The user marked this history as copied.</value></data>
+  <data name="CopySelectionChanged" xml:space="preserve"><value>The copy selection has changed. Reopen the project and try again.</value></data>
 </root>

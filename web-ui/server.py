@@ -68,6 +68,15 @@ def translate(language, key):
     return MESSAGES[key][language == "ru"]
 
 
+def project_name(archive):
+    try:
+        manifest = json.loads((archive / "project.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    name = manifest.get("Name") if isinstance(manifest, dict) else None
+    return name.strip() or None if isinstance(name, str) else None
+
+
 def read_snapshot(db, direct_hidden=(), hidden=(), admin=False):
     row = db.execute("""
         SELECT s.guild_id, s.started_at, s.data,
@@ -298,7 +307,9 @@ class ArchiveHandler(BaseHTTPRequestHandler):
             admin = bool(session and session.admin)
             direct_hidden, hidden = hidden_channels(db)
             if url.path == "/api/snapshot":
-                self.send_json(read_snapshot(db, direct_hidden, hidden, admin))
+                snapshot = read_snapshot(db, direct_hidden, hidden, admin)
+                snapshot["projectName"] = project_name(self.server.archive)
+                self.send_json(snapshot)
             elif url.path == "/api/messages":
                 query = parse_qs(url.query)
                 if not admin and query.get("channel", [""])[0] in hidden:

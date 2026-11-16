@@ -2,7 +2,7 @@
 #define LegacyAppName "APEX Discord Snapshot Master"
 #define AppExe LegacyAppName + ".exe"
 #ifndef AppVersion
-  #define AppVersion "1.2.3"
+  #define AppVersion "1.2.4"
 #endif
 #ifndef PublishDir
   #error PublishDir must point to the self-contained Windows publish folder.

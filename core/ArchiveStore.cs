@@ -93,19 +93,20 @@ internal sealed class ArchiveStore : IDisposable
         }).SingleOrDefault();
         if (server is null) throw new InvalidDataException(Strings.Get("SnapshotDataMissing"));
         var roots = database.Query("""
-            SELECT c.id, c.name, c.data, g.name, c.copied_at FROM channels c
+            SELECT c.id, c.name, c.data, g.name, c.copied_at, c.pending_copy FROM channels c
             LEFT JOIN categories g ON g.id = c.parent_id WHERE c.selected = 1 ORDER BY c.name, c.id
             """, row =>
         {
             var title = row.Text(3) is { } category ? $"{category} / {row.Text(1)}" : row.Text(1)!;
             using var data = JsonDocument.Parse(row.Text(2)!);
             var choice = new ChannelChoice(row.Text(0)!, title, DiscordChannel.FromJson(data.RootElement).Kind ?? "");
-            return (Choice: choice, CopiedAt: row.Text(4));
+            return (Choice: choice, CopiedAt: row.Text(4), Pending: row.Flag(5));
         }).ToArray();
         var dates = roots.Where(root => root.CopiedAt is not null).ToDictionary(root => root.Choice.Id,
             root => DateTimeOffset.Parse(root.CopiedAt!, System.Globalization.CultureInfo.InvariantCulture));
         var incomplete = database.Query(HasPendingCopy, row => row.Flag(0)).Single() || database.Query(HasGaps, row => row.Flag(0)).Single();
-        return new ArchiveProgress(server, roots.Select(root => root.Choice).ToArray(), incomplete, operationId, dates);
+        return new ArchiveProgress(server, roots.Select(root => root.Choice).ToArray(), incomplete, operationId, dates,
+            roots.Where(root => root.Pending).Select(root => root.Choice.Id).ToHashSet());
     }
 
     public (string GuildId, string Cutoff, string StartedAt) Snapshot => db.Query(
@@ -155,7 +156,7 @@ internal sealed class ArchiveStore : IDisposable
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         ON CONFLICT(id) DO UPDATE SET parent_id = excluded.parent_id, name = excluded.name, type = excluded.type,
           data = excluded.data, cursor = excluded.cursor, history_done = excluded.history_done,
-          discovery_done = excluded.discovery_done, pending_copy = 1, history_error = NULL, discovery_error = NULL
+          discovery_done = excluded.discovery_done, pending_copy = 1, history_error = NULL, discovery_error = NULL, note = NULL
         WHERE channels.pending_copy = 0
         """, channel.Id, channel.ParentId, channel.Name, channel.Type, channel.Data.GetRawText(), selected, cutoff,
         channel.Container, !selected || !channel.HasThreads);
@@ -174,6 +175,30 @@ internal sealed class ArchiveStore : IDisposable
         if (db.Query(HasGaps, row => row.Flag(0)).Single()) return;
         db.Execute("UPDATE channels SET pending_copy = 0, copied_through = ?, copied_at = ? WHERE pending_copy = 1",
             cutoff, DateTimeOffset.UtcNow.ToString("O"));
+    }
+
+    public void ResolveChannelCopies(string operationId, IReadOnlyCollection<string> channelIds, bool markComplete)
+    {
+        db.Transaction(() =>
+        {
+            var currentOperation = db.Query("SELECT copy_id FROM snapshot WHERE id = 1", row => row.Text(0)).Single();
+            var pending = db.Query("SELECT id FROM channels WHERE selected = 1 AND pending_copy = 1", row => row.Text(0)!).ToHashSet();
+            if (currentOperation != operationId || channelIds.Any(id => !pending.Contains(id)))
+                throw new InvalidOperationException(Strings.Get("CopySelectionChanged"));
+
+            var cutoff = Snapshot.Cutoff;
+            var now = DateTimeOffset.UtcNow.ToString("O");
+            var note = Strings.Get(markComplete ? "ChannelManuallyCompleted" : "ChannelCopySkipped");
+            foreach (var id in channelIds)
+                db.Execute("""
+                    UPDATE channels SET pending_copy = 0, history_done = 1, discovery_done = 1,
+                        history_error = NULL, discovery_error = NULL, note = ?,
+                        copied_through = CASE WHEN ? THEN ? ELSE copied_through END,
+                        copied_at = CASE WHEN ? THEN ? ELSE copied_at END
+                    WHERE pending_copy = 1 AND (id = ? OR (selected = 0 AND parent_id = ?))
+                    """, note, markComplete, cutoff, markComplete, now, id, id);
+            FinishCopy(cutoff);
+        });
     }
 
     private void SaveAsset(MediaAsset entry, string? channelId = null, string? messageId = null) => db.Execute("""
@@ -204,6 +229,8 @@ internal sealed class ArchiveStore : IDisposable
             foreach (var message in messages)
             {
                 var id = message.Id();
+                // A skipped partial copy can revisit pages that were already saved.
+                if (db.Query("SELECT 1 FROM messages WHERE id = ?", row => row.Flag(0), id).Any()) continue;
                 var author = message.Get("author");
                 db.Execute("INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?)", id, channel.Id, author.Text("id"),
                     message.Text("timestamp"), message.Text("content"), message.GetRawText());

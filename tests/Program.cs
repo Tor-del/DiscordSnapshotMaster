@@ -125,7 +125,42 @@ try
         log.Any(line => line.Contains("Третий [34] · 1 messages")), "обновление сохраняет новые сообщения канала и его ветки без дублей");
     var mixedCheck = await SnapshotImporter.CheckAsync(projectDirectory, _ => { }, timeout.Token);
     Expect(!mixedCheck.Incomplete && mixedCheck.DamagedFiles == 0, "архив после смешанного копирования проходит проверку");
-    Console.WriteLine("Проверки прошли. Права, лимиты, ветки, остановка, возобновление, докопирование, обновление, вложения и SQLite.");
+
+    server.NewRootMessageId = null;
+    var reviewDirectory = Path.Combine(root, "Управление копированием");
+    var reviewId = Guid.NewGuid().ToString("N");
+    using var pauseReview = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
+    await ExpectFailure<OperationCanceledException>(() => importer.StartInDirectoryAsync(client, "1", ["30", "33", "34"],
+        reviewDirectory, 0, line =>
+        {
+            if (line.Contains("русский канал") && line.Contains("saved")) pauseReview.Cancel();
+        }, pauseReview.Token, operationId: reviewId), "пауза после сохранения первой страницы");
+    await ExpectFailure<InvalidOperationException>(() =>
+    {
+        SnapshotImporter.ResolveChannelCopies(reviewDirectory, reviewId, ["30", "32"], markComplete: false);
+        return Task.CompletedTask;
+    }, "неактуальный выбор отклоняется целиком");
+    SnapshotImporter.ResolveChannelCopies(reviewDirectory, reviewId, ["30"], markComplete: false);
+    SnapshotImporter.ResolveChannelCopies(reviewDirectory, reviewId, ["33"], markComplete: true);
+    var reviewed = SnapshotImporter.InspectProgress(reviewDirectory)!;
+    Expect(reviewed.Incomplete && reviewed.PendingChannelIds.SetEquals(["34"]) &&
+        !reviewed.CopiedAt.ContainsKey("30") && reviewed.CopiedAt.ContainsKey("33"),
+        "пропуск сохраняет прежнюю границу, ручное завершение отмечает дату, оставшийся канал ждёт копирования");
+    var rootRequests = server.RootCursors.Count;
+    var addedRequests = server.AddedCursors.Count;
+    var threadRequests = server.ThreadRequests;
+    log.Clear();
+    var reviewedCopy = await importer.ResumeAsync(client, reviewDirectory, 0, log.Add, _ => { }, timeout.Token);
+    Expect(!reviewedCopy.Incomplete && server.RootCursors.Count == rootRequests && server.AddedCursors.Count == addedRequests &&
+        server.ThreadRequests == threadRequests &&
+        log.Any(line => line.Contains("русский канал [30] · 1 messages")) &&
+        log.Any(line => line.Contains("Архивная ветка [31] · 0 messages")),
+        "пропуск и ручное завершение сохраняют загруженную историю и исключают каналы и ветки из продолжения");
+    log.Clear();
+    var retried = await importer.CopyChannelsAsync(client, reviewDirectory, ["30"], Guid.NewGuid().ToString("N"), 0, log.Add, timeout.Token);
+    Expect(!retried.Incomplete && log.Any(line => line.Contains("русский канал [30] · 2 messages")),
+        "пропущенный канал можно скопировать снова без потери сообщений");
+    Console.WriteLine("Проверки прошли. Права, лимиты, ветки, остановка, возобновление, пропуск, ручное завершение, докопирование, обновление, вложения и SQLite.");
 }
 finally { Directory.Delete(root, recursive: true); }
 
@@ -158,6 +193,7 @@ internal sealed class FakeDiscord : HttpMessageHandler
     public TimeSpan FirstRetryDelay { get; private set; }
     public List<string> RootCursors { get; } = [];
     public List<string> AddedCursors { get; } = [];
+    public int ThreadRequests { get; private set; }
     public bool ExposeAdditionalChannel { get; set; }
     public bool ExposeThirdChannel { get; set; }
     public string? NewRootMessageId { get; set; }
@@ -210,8 +246,10 @@ internal sealed class FakeDiscord : HttpMessageHandler
             AddedCursors.Add(before);
             return Json(before == "101" ? "[]" : $"[{Message("101", null)}]");
         }
-        if (path == "channels/31/messages" && NewRootMessageId is { } rootId)
+        if (path == "channels/31/messages")
         {
+            ThreadRequests++;
+            if (NewRootMessageId is not { } rootId) return Json("[]");
             var threadId = (ulong.Parse(rootId) + 1).ToString();
             return Json(url.Query.StartsWith($"?before={threadId}&", StringComparison.Ordinal) ? "[]" : $"[{Message(threadId, null)}]");
         }
@@ -231,7 +269,6 @@ internal sealed class FakeDiscord : HttpMessageHandler
             "guilds/1/threads/active" or "channels/30/users/@me/threads/archived/private" or "channels/33/threads/archived/public"
                 => Json("""{"threads":[],"has_more":false}"""),
             "channels/30/threads/archived/public" => Json(Threads),
-            "channels/31/messages" => Json("[]"),
             _ => throw new InvalidOperationException($"Неожиданный запрос {path}."),
         };
     }

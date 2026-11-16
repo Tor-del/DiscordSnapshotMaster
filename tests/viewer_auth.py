@@ -121,6 +121,19 @@ class ViewerAuthorizationTests(unittest.TestCase):
         for route in ("/api/snapshot", "/api/messages?channel=3", "/media/" + ASSET):
             self.assertEqual(self.request(route)[0], 503)
 
+    def test_project_name_follows_manifest(self):
+        manifest = self.archive / "project.json"
+        viewer = self.login("101")
+        self.assertIsNone(self.request("/api/snapshot", viewer)[2]["projectName"])
+        manifest.write_text(json.dumps({"Name": "Архив & копия", "Settings": {"Token": "test-token"}}), encoding="utf-8")
+        status, _, snapshot = self.request("/api/snapshot", viewer)
+        self.assertEqual(status, 200)
+        self.assertEqual(snapshot["projectName"], "Архив & копия")
+        self.assertNotIn("test-token", json.dumps(snapshot))
+        self.assertEqual(self.request("/project.json", viewer)[0], 404)
+        manifest.write_text('{"Name":"Renamed"}', encoding="utf-8")
+        self.assertEqual(self.request("/api/snapshot", viewer)[2]["projectName"], "Renamed")
+
     def test_permissions_and_deletion(self):
         for route in ("/api/snapshot", "/api/messages?channel=3", "/media/" + ASSET):
             self.assertEqual(self.request(route)[0], 401)

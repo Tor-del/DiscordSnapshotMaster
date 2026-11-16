@@ -156,6 +156,17 @@ internal sealed class ProjectFile(string directory, FileStream folderLock) : IDi
     }
 
     public void SaveSettings(CopySettings settings) => Save(manifest with { Status = ProjectStatus.Copying, Settings = settings });
+    public void SkipPlannedChannels(IReadOnlySet<string> channelIds)
+    {
+        if (Settings is not { } settings || Archive is { } archive && IsCurrentCopy(archive))
+            throw new InvalidOperationException(Strings.Get("CopySelectionChanged"));
+
+        var remaining = settings.Channels.Where(channel => !channelIds.Contains(channel.Id)).ToArray();
+        if (remaining.Length > 0) SaveSettings(settings with { Channels = remaining });
+        else Save(manifest with { Status = Archive is null ? ProjectStatus.New
+            : Archive.Incomplete ? ProjectStatus.Copying : ProjectStatus.Completed, Settings = null });
+    }
+
     public void Complete() => Save(manifest with { Status = ProjectStatus.Completed, Settings = null });
     public void RefreshArchive() => Archive = SnapshotImporter.InspectProgress(DirectoryPath);
 

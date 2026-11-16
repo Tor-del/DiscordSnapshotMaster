@@ -6,7 +6,7 @@ namespace DiscordSnapshot;
 public sealed record ImportResult(string Directory, bool Incomplete);
 public sealed record ArchiveCheck(bool Incomplete, int DamagedFiles);
 public sealed record ArchiveProgress(DiscordServer Server, ChannelChoice[] Channels, bool Incomplete, string OperationId,
-    IReadOnlyDictionary<string, DateTimeOffset> CopiedAt);
+    IReadOnlyDictionary<string, DateTimeOffset> CopiedAt, IReadOnlySet<string> PendingChannelIds);
 
 public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, CancellationToken, Task>? publishMedia = null)
 {
@@ -41,6 +41,12 @@ public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, Ca
             cancellation, operationId ?? Guid.NewGuid().ToString("N"));
 
     public static ArchiveProgress? InspectProgress(string directory) => ArchiveStore.InspectProgress(directory);
+
+    public static void ResolveChannelCopies(string directory, string operationId, IReadOnlyCollection<string> channelIds, bool markComplete)
+    {
+        using var archive = new ArchiveStore(directory);
+        archive.ResolveChannelCopies(operationId, channelIds, markComplete);
+    }
 
     public static void EnsureViewerCompose(string directory)
     {

@@ -507,6 +507,7 @@ async function loadArchive() {
       return;
     }
     const data = await api("/api/snapshot");
+    document.title = data.projectName || data.name;
     byId("admin-tools").hidden = !session.admin;
     adminsOnly.checked = session.adminsOnly;
     byId("server-name").textContent = data.name;

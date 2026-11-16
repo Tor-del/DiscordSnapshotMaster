@@ -95,7 +95,7 @@ nav { overflow: auto; overscroll-behavior: contain; padding: 14px 10px; }
 #access-items { list-style: none; padding: 0; }
 #access-items li { padding-block: 4px; border-bottom: 1px solid var(--line); }
 .channel.hidden-channel { font-style: italic; }
-.byline a { color: inherit; }
+.byline a { color: inherit; text-decoration: none; }
 .danger { color: #ffb4ab; }
 :root[data-theme="light"] .danger { color: #9e2620; }
 .timeline { overflow: auto; overscroll-behavior: contain; overflow-anchor: none; }

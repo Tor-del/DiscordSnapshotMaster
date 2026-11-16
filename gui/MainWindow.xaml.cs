@@ -77,11 +77,12 @@ public partial class MainWindow : Window
 
     private sealed class ChannelRow(ChannelChoice channel, bool available, bool pending, DateTimeOffset? copiedAt) : INotifyPropertyChanged
     {
-        private bool isChecked = pending;
+        private bool isChecked;
         public ChannelChoice Channel { get; } = channel;
-        public bool CanSelect { get; } = available && !pending;
+        public bool CanSelect { get; } = available || pending;
         public bool IsArchived => copiedAt.HasValue;
-        public string Detail => copiedAt is { } date ? Strings.Get("ChannelCopiedAt", date.ToLocalTime()) : Channel.KindLabel;
+        public string Detail => pending ? Strings.Get("ChannelCopyPending")
+            : copiedAt is { } date ? Strings.Get("ChannelCopiedAt", date.ToLocalTime()) : Channel.KindLabel;
         public bool IsChecked
         {
             get => isChecked;
@@ -97,15 +98,17 @@ public partial class MainWindow : Window
 
     private void SetChannelRows()
     {
-        var pending = (project.Settings?.Channels ?? (project.CanResume ? project.Archive?.Channels : null)) ?? [];
-        var pendingIds = pending.Select(channel => channel.Id).ToHashSet();
-        var archived = project.Archive?.Channels ?? [];
+        var progress = project.Archive;
+        var archived = progress?.Channels ?? [];
+        var planned = project.CanResume && (progress is null || !project.IsCurrentCopy(progress)) ? project.Settings?.Channels ?? [] : [];
+        var pendingIds = project.CanResume && progress is not null && project.IsCurrentCopy(progress)
+            ? progress.PendingChannelIds : planned.Select(channel => channel.Id).ToHashSet();
         var availableIds = availableChannels.Select(channel => channel.Id).ToHashSet();
-        var choices = project.CanResume ? pending.Concat(archived) : availableChannels.Concat(archived);
+        var choices = (project.CanResume ? planned : availableChannels).Concat(archived);
         channelRows = choices.DistinctBy(channel => channel.Id)
             .Select(channel => new ChannelRow(channel with { Title = Clean(channel.Title) },
-                availableIds.Contains(channel.Id), pendingIds.Contains(channel.Id),
-                project.Archive?.CopiedAt.GetValueOrDefault(channel.Id) is { } date && date != default ? date : null))
+                !project.CanResume && availableIds.Contains(channel.Id), pendingIds.Contains(channel.Id),
+                progress?.CopiedAt.GetValueOrDefault(channel.Id) is { } date && date != default ? date : null))
             .ToArray();
         channelView = new ListCollectionView(channelRows) { Filter = MatchesSearch };
         Channels.ItemsSource = channelView;
@@ -147,12 +150,16 @@ public partial class MainWindow : Window
         DisconnectButton.IsEnabled = !Busy && connected;
         Servers.IsEnabled = configuring && project.Status == ProjectStatus.New && connected;
         ChannelSearch.IsEnabled = channelRows.Length > 0;
-        Channels.IsEnabled = !Busy && !project.CanResume;
+        Channels.IsEnabled = !Busy;
         var selectAllLabel = Strings.Get(project.Status == ProjectStatus.Completed ? "UiSelectNewChannels" : "UiSelectAll");
         SelectAllButton.ToolTip = selectAllLabel;
         AutomationProperties.SetName(SelectAllButton, selectAllLabel);
-        SelectAllButton.IsEnabled = configuring && Channels.Items.OfType<ChannelRow>().Any(row => row.CanSelect && !row.IsArchived && !row.IsChecked);
-        ClearButton.IsEnabled = configuring && selected > 0;
+        SelectAllButton.IsEnabled = !Busy && Channels.Items.OfType<ChannelRow>().Any(row => row.CanSelect && (project.CanResume || !row.IsArchived) && !row.IsChecked);
+        ClearButton.IsEnabled = !Busy && selected > 0;
+        SkipCopyButton.Visibility = project.CanResume && channelRows.Any(row => row.CanSelect) ? Visibility.Visible : Visibility.Collapsed;
+        MarkCopiedButton.Visibility = project.Archive is { } progress && project.IsCurrentCopy(progress)
+            ? SkipCopyButton.Visibility : Visibility.Collapsed;
+        SkipCopyButton.IsEnabled = MarkCopiedButton.IsEnabled = !Busy && selected > 0;
         CopyButton.Content = copying ? Strings.Get("Pause") : project.CanResume ? Strings.Get("Resume")
             : Strings.Get(project.Status == ProjectStatus.Completed ? "UiSyncChannels" : "UiStart");
         CopyButton.IsEnabled = copying ? operation is { IsCancellationRequested: false }
@@ -177,7 +184,7 @@ public partial class MainWindow : Window
         };
         var selectable = channelRows.Count(row => row.CanSelect);
         SelectionText.Text = channelRows.Length > 0 && !Channels.HasItems ? Strings.Get("NoSearchMatches")
-            : configuring && selectable > 0 ? Strings.Get("SelectedChannelCount", selected, selectable)
+            : selectable > 0 ? Strings.Get("SelectedChannelCount", selected, selectable)
             : channelRows.Length > 0 ? Strings.Get("ProjectChannelCount", channelRows.Length)
             : Servers.SelectedItem is null ? Strings.Get("UiSelectServer") : Strings.Get("NoChannelsLoaded");
     }
@@ -273,6 +280,7 @@ public partial class MainWindow : Window
             AppendLog(StatusText.Text);
             operation = null;
             copying = false;
+            if (isCopy) SetChannelRows();
             RefreshControls();
             if (closeWhenReady) Close();
         }
@@ -372,6 +380,38 @@ public partial class MainWindow : Window
         else await StartCopyAsync();
     }
 
+    private async void ResolveChannelCopiesClick(object sender, RoutedEventArgs e)
+    {
+        if (Busy || !project.CanResume) return;
+        var selected = channelRows.Where(row => row.CanSelect && row.IsChecked).Select(row => row.Channel.Id).ToHashSet();
+        if (selected.Count == 0) return;
+
+        var markComplete = sender == MarkCopiedButton;
+        var progress = project.Archive;
+        var started = progress is not null && project.IsCurrentCopy(progress);
+        if (markComplete && !started) return;
+        var title = Strings.Get(markComplete ? "UiMarkCopied" : "UiSkipChannelCopy");
+        var question = Strings.Get(markComplete ? "ConfirmMarkCopied" : "ConfirmSkipChannelCopy", selected.Count);
+        if (MessageBox.Show(this, question, title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+
+        StopViewer();
+        await RunAsync(title, async cancellation =>
+        {
+            if (started)
+            {
+                SnapshotImporter.ResolveChannelCopies(project.DirectoryPath, progress!.OperationId, selected, markComplete);
+                project.RefreshArchive();
+                if (project.Archive is { Incomplete: false }) project.Complete();
+            }
+            else project.SkipPlannedChannels(selected);
+
+            var message = Strings.Get(markComplete ? "MarkedChannelsCopied" : "SkippedChannelCopies", selected.Count);
+            return await SyncCopyChangesAsync(message, cancellation);
+        }, message => message);
+        SetChannelRows();
+        RefreshControls();
+    }
+
     private async Task StartCopyAsync()
     {
         if (Busy || discord is not { } client ||
@@ -434,27 +474,30 @@ public partial class MainWindow : Window
         StopViewer();
         return RunAsync(status, async cancellation =>
         {
-            var result = await run(cancellation);
-            project.RefreshArchive();
+            ImportResult result;
+            try { result = await run(cancellation); }
+            finally { project.RefreshArchive(); }
             if (!result.Incomplete) project.Complete();
-            Exception? syncError = null;
-            if (remote is not null)
-            {
-                try { await remote.SaveAsync(cancellation); }
-                catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidOperationException)
-                {
-                    syncError = error;
-                }
-            }
-            return (Result: result, SyncError: syncError);
-        }, outcome =>
+            return await SyncCopyChangesAsync(Strings.Get(result.Incomplete ? "ArchiveHasGaps" : "CopyFinished"), cancellation);
+        }, message =>
         {
             TokenBox.Clear();
-            SetChannelRows();
-            var message = Strings.Get(outcome.Result.Incomplete ? "ArchiveHasGaps" : "CopyFinished");
-            if (outcome.SyncError is not null) return Strings.Get("SshCopySyncFailed", message, outcome.SyncError.Message);
-            return remote is null ? message : message + " " + Strings.Get("SshSaved");
+            return message;
         }, isCopy: true);
+    }
+
+    private async Task<string> SyncCopyChangesAsync(string message, CancellationToken cancellation)
+    {
+        if (remote is null) return message;
+        try
+        {
+            await remote.SaveAsync(cancellation);
+            return message + " " + Strings.Get("SshSaved");
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return Strings.Get("SshCopySyncFailed", message, error.Message);
+        }
     }
 
     private async void CheckClick(object sender, RoutedEventArgs e)
@@ -611,7 +654,8 @@ public partial class MainWindow : Window
     private void InputsChanged(object sender, RoutedEventArgs e) => RefreshControls();
     private void SelectAllClick(object sender, RoutedEventArgs e)
     {
-        foreach (var row in Channels.Items.OfType<ChannelRow>().Where(row => row.CanSelect && !row.IsArchived)) row.IsChecked = true;
+        foreach (var row in Channels.Items.OfType<ChannelRow>().Where(row => row.CanSelect && (project.CanResume || !row.IsArchived)))
+            row.IsChecked = true;
         RefreshControls();
     }
 

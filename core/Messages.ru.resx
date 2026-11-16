@@ -236,4 +236,14 @@
   <data name="SshDatabaseJournal" xml:space="preserve"><value>На сервере есть файл журнала или WAL SQLite. Завершите запись в архив, затем повторите попытку.</value></data>
   <data name="SshCopySyncFailed" xml:space="preserve"><value>{0} Синхронизация не удалась. {1}</value></data>
   <data name="UiOAuthRedirectSteps" xml:space="preserve"><value>1. Определите адрес, по которому будут открывать архив. Для локального просмотра используйте http://127.0.0.1:8080/auth/callback. Для публичного просмотра добавьте /auth/callback к HTTPS-адресу сайта, например https://archive.example.org/auth/callback.&#10;2. Откройте Discord Developer Portal. Выберите приложение или нажмите New Application. В разделе OAuth2 скопируйте Client ID и Client Secret. При необходимости создайте секрет там же.&#10;3. В OAuth2 → Redirects нажмите Add Redirect, вставьте полный URI из шага 1 и сохраните изменения. Укажите ниже точно такой же URI, включая схему, адрес, порт, если он используется, и путь /auth/callback.&#10;4. Сохраните настройки, откройте просмотрщик по выбранному адресу и нажмите «Войти через Discord».</value></data>
+  <data name="UiSkipChannelCopy" xml:space="preserve"><value>Пропустить выбранные</value></data>
+  <data name="UiMarkCopied" xml:space="preserve"><value>Отметить скопированными</value></data>
+  <data name="ConfirmSkipChannelCopy" xml:space="preserve"><value>Пропустить выбранные каналы ({0}) и их ветки? Сохранённые сообщения и файлы останутся в архиве. Эти каналы можно выбрать снова при следующем копировании.</value></data>
+  <data name="ConfirmMarkCopied" xml:space="preserve"><value>Отметить выбранные каналы ({0}) и их ветки скопированными? При следующем обновлении история будет загружаться с границы текущего копирования. Пропущенные сообщения до этой границы останутся за пределами архива.</value></data>
+  <data name="SkippedChannelCopies" xml:space="preserve"><value>Пропущено каналов: {0}.</value></data>
+  <data name="MarkedChannelsCopied" xml:space="preserve"><value>Отмечено скопированными каналов: {0}.</value></data>
+  <data name="ChannelCopyPending" xml:space="preserve"><value>В очереди текущего копирования</value></data>
+  <data name="ChannelCopySkipped" xml:space="preserve"><value>Оставшаяся история пропущена пользователем.</value></data>
+  <data name="ChannelManuallyCompleted" xml:space="preserve"><value>История отмечена пользователем как скопированная.</value></data>
+  <data name="CopySelectionChanged" xml:space="preserve"><value>Список каналов для копирования изменился. Откройте проект заново и повторите попытку.</value></data>
 </root>
