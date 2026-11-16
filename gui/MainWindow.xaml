@@ -1,0 +1,308 @@
+<Window x:Class="DiscordSnapshot.Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DiscordSnapshot.Gui"
+        xmlns:core="clr-namespace:DiscordSnapshot;assembly=DiscordSnapshot.Core"
+        Title="{x:Static core:Strings.ProductName}" Icon="Assets/App.ico" Width="1080" Height="874" MinWidth="900" MinHeight="710"
+        WindowStartupLocation="CenterScreen" Language="{DynamicResource UiCulture}" FontFamily="Segoe UI Variable, Segoe UI"
+        Foreground="#F5F5F5">
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#202733" Offset="0" />
+            <GradientStop Color="#202020" Offset="0.55" />
+            <GradientStop Color="#28242F" Offset="1" />
+        </LinearGradientBrush>
+    </Window.Background>
+    <Window.Resources>
+        <SolidColorBrush x:Key="Panel" Color="#252525" />
+        <SolidColorBrush x:Key="PanelStroke" Color="#454545" />
+        <SolidColorBrush x:Key="Secondary" Color="#BDBDBD" />
+        <SolidColorBrush x:Key="Accent" Color="#60CDFF" />
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Panel}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PanelStroke}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+        <Style x:Key="Section" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+        <Style x:Key="Field" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Secondary}" />
+            <Setter Property="Margin" Value="0,0,0,5" />
+        </Style>
+        <Style x:Key="FooterButton" TargetType="Button">
+            <Setter Property="Background" Value="#323232" />
+            <Setter Property="Foreground" Value="#F5F5F5" />
+            <Setter Property="BorderBrush" Value="#505050" />
+            <Setter Property="Padding" Value="13,6" />
+            <Setter Property="MinHeight" Value="33" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1" CornerRadius="5" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Surface" Property="Opacity" Value="0.84" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Surface" Property="Opacity" Value="0.67" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Surface" Property="BorderBrush" Value="#F5F5F5" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Surface" Property="Opacity" Value="0.42" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource FooterButton}">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+    </Window.Resources>
+    <Grid Margin="24,16,24,18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="3*" MinHeight="300" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="2*" MinHeight="136" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="{DynamicResource UiArchiveHeading}" FontSize="28" FontWeight="SemiBold" Margin="0,2,0,16" />
+
+        <DockPanel Grid.Row="1" Margin="0,0,0,12">
+            <Button DockPanel.Dock="Right" Content="{DynamicResource UiCloseProject}" Click="CloseProjectClick"
+                    Style="{StaticResource FooterButton}" Margin="12,0,0,0" />
+            <Button x:Name="OpenProjectFolderButton" DockPanel.Dock="Right" Content="{DynamicResource UiOpenProjectFolder}" Click="OpenProjectFolderClick"
+                    Style="{StaticResource FooterButton}" Margin="12,0,0,0" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="ProjectStatusText" AutomationProperties.LiveSetting="Polite" />
+                <TextBlock x:Name="ProjectPathText" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Secondary}" />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="302" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource UiConnection}" Style="{StaticResource Section}" />
+                    <TextBlock x:Name="TokenLabel" Text="{DynamicResource UiBotToken}" Style="{StaticResource Field}" />
+                    <DockPanel x:Name="TokenInputRow" LastChildFill="True" Margin="0,0,0,7">
+                        <Button x:Name="TokenHelpButton" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Margin="6,0,0,0"
+                                Click="TokenHelpClick" ToolTip="{DynamicResource UiTokenHelp}" AutomationProperties.Name="{DynamicResource UiTokenHelp}">
+                            <TextBlock Text="?" FontSize="18" FontWeight="SemiBold" />
+                        </Button>
+                        <Button x:Name="ConnectButton" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Margin="6,0,0,0"
+                                Click="ConnectClick" ToolTip="{DynamicResource UiConnect}" AutomationProperties.Name="{DynamicResource UiConnect}">
+                            <Path Width="18" Height="18" Stretch="Uniform" Stroke="{StaticResource Accent}" StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Data="M 7,3 V 8 M 13,3 V 8 M 5,8 H 15 V 10 A 5,5 0 0 1 5,10 Z M 10,15 V 18" />
+                        </Button>
+                        <PasswordBox x:Name="TokenBox" Height="34" AutomationProperties.Name="{DynamicResource UiBotToken}"
+                                     PasswordChanged="InputsChanged" />
+                    </DockPanel>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MaxWidth="218" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="ConnectionText" Text="{DynamicResource UiDisconnected}" Foreground="{StaticResource Secondary}"
+                                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                        <Button x:Name="DisconnectButton" Grid.Column="1" Style="{StaticResource IconButton}" Margin="8,0,0,0"
+                                Visibility="Collapsed" Click="DisconnectClick" ToolTip="{DynamicResource UiDisconnect}"
+                                AutomationProperties.Name="{DynamicResource UiDisconnect}">
+                            <Path Width="18" Height="18" Stretch="Uniform" Stroke="{StaticResource Accent}" StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Data="M 10,3 H 4 V 17 H 10 M 8,10 H 18 M 14,6 L 18,10 L 14,14" />
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Text="{DynamicResource UiRequestIntervals}" Style="{StaticResource Section}" />
+                    <Grid Margin="0,0,0,7">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource UiApiMilliseconds}" Style="{StaticResource Field}" />
+                            <TextBox x:Name="ApiInterval" Text="2000" Height="34" MaxLength="10" AutomationProperties.Name="{DynamicResource UiApiInterval}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{DynamicResource UiCdnMilliseconds}" Style="{StaticResource Field}" />
+                            <TextBox x:Name="CdnInterval" Text="1000" Height="34" MaxLength="10" AutomationProperties.Name="{DynamicResource UiCdnInterval}" />
+                        </StackPanel>
+                        <Button x:Name="SlowButton" Grid.Column="3" VerticalAlignment="Bottom" Margin="10,0,0,0"
+                                Style="{StaticResource IconButton}" Click="SlowClick"
+                                ToolTip="{DynamicResource UiSlowModeHint}" AutomationProperties.Name="{DynamicResource UiSlowMode}">
+                            <Path Width="18" Height="18" Stretch="Uniform" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Data="M 4,15 A 7,7 0 1 1 16,15 M 12,14 H 8 L 6,10" />
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Text="{DynamicResource UiServerAndChannels}" Style="{StaticResource Section}" />
+                    <ComboBox x:Name="Servers" DockPanel.Dock="Top" Height="34" Margin="0,0,0,10"
+                              AutomationProperties.Name="{DynamicResource UiServer}" DisplayMemberPath="Label" SelectionChanged="ServerChanged" />
+                    <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="ChannelSearch" Height="34" Padding="9,0" VerticalContentAlignment="Center"
+                                 AutomationProperties.Name="{DynamicResource UiSearchChannels}" TextChanged="ChannelSearchChanged" />
+                        <TextBlock Text="{DynamicResource UiSearchChannels}" Margin="10,0" VerticalAlignment="Center"
+                                   Foreground="{StaticResource Secondary}" IsHitTestVisible="False">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=ChannelSearch}" Value="">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button x:Name="SelectAllButton" Grid.Column="1" Style="{StaticResource IconButton}" Click="SelectAllClick"
+                                Margin="8,0,0,0" ToolTip="{DynamicResource UiSelectAll}" AutomationProperties.Name="{DynamicResource UiSelectAll}">
+                            <Path Width="17" Height="17" Stretch="Uniform" Stroke="{StaticResource Accent}" StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Data="M 5,2 H 17 V 14 M 2,6 H 13 V 17 H 2 Z M 4,11 L 7,14 L 11,9" />
+                        </Button>
+                        <Button x:Name="ClearButton" Grid.Column="2" Style="{StaticResource IconButton}" Click="ClearClick"
+                                Margin="6,0,0,0" ToolTip="{DynamicResource UiClearSelection}" AutomationProperties.Name="{DynamicResource UiClearSelection}">
+                            <Path Width="17" Height="17" Stretch="Uniform" Stroke="{StaticResource Secondary}" StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Data="M 5,2 H 17 V 14 M 2,6 H 13 V 17 H 2 Z M 5,9 L 10,14 M 10,9 L 5,14" />
+                        </Button>
+                    </Grid>
+                    <TextBlock x:Name="SelectionText" DockPanel.Dock="Top" Margin="0,0,0,8" Text="{DynamicResource UiSelectServer}"
+                               Foreground="{StaticResource Secondary}" />
+                    <ItemsControl x:Name="Channels" AutomationProperties.Name="{DynamicResource UiArchiveChannels}"
+                                  Background="#202020" BorderBrush="{StaticResource PanelStroke}"
+                                  BorderThickness="1" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.ScrollUnit="Pixel"
+                                  VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ItemsControl.Template>
+                            <ControlTemplate TargetType="ItemsControl">
+                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" Padding="4">
+                                    <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                                  Focusable="False">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderThickness="1" CornerRadius="3" Margin="2,1,6,1" Padding="7,2">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="BorderBrush" Value="Transparent" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" IsEnabled="{Binding CanSelect}"
+                                          RequestBringIntoView="ChannelBringIntoView"
+                                          Click="InputsChanged" AutomationProperties.Name="{Binding Channel.Title}"
+                                          AutomationProperties.HelpText="{Binding Detail}" ToolTip="{Binding Channel.Title}"
+                                          HorizontalContentAlignment="Stretch" FocusVisualStyle="{x:Null}" Padding="7,5">
+                                        <StackPanel>
+                                            <local:ChannelTitle Title="{Binding Channel.Title}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{StaticResource Secondary}" />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="4" Style="{StaticResource Card}" Padding="16,12">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{DynamicResource UiLog}" Style="{StaticResource Section}" />
+                <RichTextBox x:Name="Journal" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                             Padding="8" AutomationProperties.Name="{DynamicResource UiImportLog}">
+                    <RichTextBox.CommandBindings>
+                        <CommandBinding Command="ApplicationCommands.Copy" Executed="CopyJournalText" />
+                    </RichTextBox.CommandBindings>
+                    <FlowDocument PagePadding="0" />
+                </RichTextBox>
+            </DockPanel>
+        </Border>
+
+        <DockPanel Grid.Row="5" Margin="0,12,0,0" LastChildFill="True">
+            <WrapPanel DockPanel.Dock="Bottom" Margin="0,9,0,0">
+                <WrapPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource FooterButton}" />
+                </WrapPanel.Resources>
+                <Button x:Name="CopyButton" Content="{DynamicResource UiStart}" Click="CopyClick" MinWidth="135" Margin="0,0,8,0"
+                        Background="{StaticResource Accent}" BorderBrush="{StaticResource Accent}" Foreground="#10232D" />
+                <Button x:Name="SshSaveButton" Click="SshSaveClick" Style="{StaticResource IconButton}"
+                        ToolTip="{DynamicResource UiSshSave}" AutomationProperties.Name="{DynamicResource UiSshSave}"
+                        Margin="0,0,8,0" Visibility="Collapsed">
+                    <Path Width="17" Height="17" Stretch="Uniform" Stroke="{StaticResource Accent}" StrokeThickness="1.6"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                          Data="M 17,3 V 8 H 12 M 17,8 A 7,7 0 0 0 4,6 M 3,17 V 12 H 8 M 3,12 A 7,7 0 0 0 16,14" />
+                </Button>
+                <Button x:Name="CheckButton" Click="CheckClick" Style="{StaticResource IconButton}" Margin="0,0,18,0"
+                        ToolTip="{DynamicResource UiCheckArchive}" AutomationProperties.Name="{DynamicResource UiCheckArchive}">
+                    <Path Width="18" Height="18" Stretch="Uniform" Stroke="{StaticResource Accent}" StrokeThickness="1.6"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                          Data="M 10,2 L 17,5 V 9 C 17,13 14,16 10,18 C 6,16 3,13 3,9 V 5 Z M 6.5,9.5 L 9,12 L 13.5,7.5" />
+                </Button>
+                <CheckBox x:Name="WebUiCheckBox" Content="{DynamicResource UiAddViewer}" Click="WebUiClick"
+                          Margin="0,0,12,0"
+                          VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}"
+                          ToolTip="{DynamicResource UiViewerHint}" />
+                <Button x:Name="ViewArchiveButton" Click="ViewArchiveClick" Style="{StaticResource IconButton}" Visibility="Collapsed"
+                        ToolTip="{DynamicResource UiViewArchive}" AutomationProperties.Name="{DynamicResource UiViewArchive}">
+                    <Path Width="18" Height="18" Stretch="Uniform" Stroke="{StaticResource Accent}" StrokeThickness="1.6"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                          Data="M 2,4 H 18 V 16 H 2 Z M 2,7.5 H 18 M 8,13 L 12,10 M 9,10 H 12 V 13" />
+                </Button>
+            </WrapPanel>
+            <ProgressBar x:Name="Activity" DockPanel.Dock="Bottom" Height="3" Margin="0,8,0,0"
+                         Foreground="{StaticResource Accent}" Background="#373737" BorderThickness="0" />
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                <CheckBox x:Name="AuthorizationCheckBox" Content="{DynamicResource UiAddAuthorization}" Click="AuthorizationClick"
+                          VerticalAlignment="Center" />
+                <Button x:Name="AuthorizationSettingsButton" Content="{DynamicResource UiAuthorizationSettings}"
+                        Style="{StaticResource FooterButton}" Click="AuthorizationSettingsClick" Margin="12,0,0,0" Visibility="Collapsed" />
+            </StackPanel>
+            <TextBlock x:Name="StatusText" TextTrimming="CharacterEllipsis"
+                       AutomationProperties.LiveSetting="Polite" Foreground="{StaticResource Secondary}" />
+        </DockPanel>
+    </Grid>
+</Window>

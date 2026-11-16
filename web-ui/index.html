@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>APEX DSM</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="Archive server" data-label="archiveRail">
+      <div id="server-icon" class="server-icon" aria-hidden="true">AS</div>
+      <div class="rail-divider"></div>
+      <button id="theme" class="icon-button" type="button" aria-label="Toggle theme" data-label="theme" title="Toggle theme">☀</button>
+    </aside>
+    <aside id="sidebar" class="sidebar">
+      <header class="server">
+        <span class="product">APEX DSM</span>
+        <strong id="server-name" data-text="archive">Archive</strong>
+      </header>
+      <nav id="channels" aria-label="Channels and threads" data-label="channelsAndThreads"></nav>
+      <footer class="snapshot">
+        <span id="snapshot-status" role="status"></span>
+        <time id="snapshot-date"></time>
+      </footer>
+      <label class="language">
+        <span data-text="language">Language</span>
+        <select id="language">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+        </select>
+      </label>
+    </aside>
+    <main id="main" class="main">
+      <header>
+        <div class="toolbar">
+          <button id="mobile-menu" class="icon-button" type="button" aria-label="Channels" data-label="channels" aria-controls="sidebar" aria-expanded="false">☰</button>
+          <h1><span id="channel-symbol" aria-hidden="true">#</span><span id="channel-name" data-text="history">History</span></h1>
+          <button id="logout" class="secondary" type="button" hidden data-text="logout">Sign out</button>
+          <form id="search" role="search" hidden>
+            <input id="query" type="search" maxlength="200" placeholder="Search this channel" data-placeholder="searchChannel" aria-label="Search this channel" data-label="searchChannel">
+            <button type="submit" data-text="search">Search</button>
+          </form>
+        </div>
+        <section id="admin-tools" class="admin-tools" hidden>
+          <label><input id="admins-only" type="checkbox"> <span data-text="adminsOnly">Administrators only</span></label>
+          <button id="access-list" class="secondary" type="button" data-text="accessList">Manage access</button>
+          <button id="hide-channel" class="secondary" type="button" hidden data-text="hideChannel">Hide channel</button>
+          <button id="delete-channel" class="secondary danger" type="button" hidden data-text="deleteChannel">Delete channel</button>
+          <span id="admin-status" role="status"></span>
+        </section>
+      </header>
+      <dialog id="access-dialog">
+        <header class="access-heading">
+          <h2 data-text="accessList">Manage access</h2>
+          <button id="close-access" class="secondary" type="button" data-text="close">Close</button>
+        </header>
+        <form id="access-form">
+          <select id="access-kind" data-label="accessList"><option value="user" data-text="users">Users</option><option value="guild" data-text="guilds">Guilds</option></select>
+          <input id="access-id" aria-label="Discord ID" placeholder="Discord ID" inputmode="numeric" maxlength="20" pattern="[1-9][0-9]{0,19}" required>
+          <label id="access-admin-label"><input id="access-admin" type="checkbox"> <span data-text="administrator">Administrator</span></label>
+          <button class="secondary" data-text="saveAccess">Add or update</button>
+        </form>
+        <ul id="access-items"></ul>
+        <p id="access-status" role="status"></p>
+      </dialog>
+      <div id="timeline" class="timeline" tabindex="0" aria-label="Message history" data-label="messageHistory">
+        <div class="history">
+          <button id="older" class="secondary load-older" type="button" hidden data-text="loadOlder">Load older messages</button>
+          <div id="messages"></div>
+        </div>
+        <div id="notice" class="notice" role="status" data-text="loadingArchive">Loading archive…</div>
+        <div id="login-panel" class="login-panel" hidden>
+          <a class="secondary login" href="/auth/login" data-text="login">Sign in with Discord</a>
+        </div>
+        <button id="retry" class="secondary" type="button" hidden data-text="retry">Retry</button>
+      </div>
+      <footer id="channel-footer" class="channel-footer" hidden>
+        <span class="lock" aria-hidden="true"></span><span data-text="readOnlyArchive">Read-only archive</span>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

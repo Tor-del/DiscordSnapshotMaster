@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="ActiveThreadsFailed" xml:space="preserve"><value>Не удалось получить активные ветки. {0}</value></data>
+  <data name="AddingViewer" xml:space="preserve"><value>Добавляю веб-интерфейс…</value></data>
+  <data name="ArchiveBusy" xml:space="preserve"><value>Архив занят другим процессом.</value></data>
+  <data name="ArchiveDatabaseMissing" xml:space="preserve"><value>В выбранной папке нет файла {0}. Выберите папку снимка.</value></data>
+  <data name="ArchiveHasGaps" xml:space="preserve"><value>В архиве есть пропуски. Подробности в журнале.</value></data>
+  <data name="ArchiveOpenFailed" xml:space="preserve"><value>Не удалось открыть snapshot.sqlite в выбранной папке.</value></data>
+  <data name="ArchivePassed" xml:space="preserve"><value>SQLite и сохранённые файлы прошли проверку.</value></data>
+  <data name="ArchiveViewer" xml:space="preserve"><value>Веб-интерфейс архива</value></data>
+  <data name="AssetError" xml:space="preserve"><value>Файл {0} {1}</value></data>
+  <data name="BotCannotReadChannel" xml:space="preserve"><value>Боту недоступна история канала.</value></data>
+  <data name="BotCannotReadParent" xml:space="preserve"><value>Боту недоступна история родительского канала.</value></data>
+  <data name="BotConnectionRequired" xml:space="preserve"><value>Подключите бота.</value></data>
+  <data name="CdnDownloadFailed" xml:space="preserve"><value>Не удалось скачать файл с Discord CDN.</value></data>
+  <data name="CdnReadFailed" xml:space="preserve"><value>Не удалось дочитать файл с Discord CDN.</value></data>
+  <data name="ChannelComplete" xml:space="preserve"><value>готово</value></data>
+  <data name="ChannelImportIncomplete" xml:space="preserve"><value>Канал «{0}» не завершён. {1}</value></data>
+  <data name="ChannelIncomplete" xml:space="preserve"><value>не завершён</value></data>
+  <data name="ChannelReport" xml:space="preserve"><value>  {0} [{1}] · {2} сообщ. · {3}</value></data>
+  <data name="ChannelSelectionUnavailable" xml:space="preserve"><value>В списке есть недоступные каналы. Обновите выбор.</value></data>
+  <data name="CheckingArchive" xml:space="preserve"><value>Проверяю SQLite и файлы…</value></data>
+  <data name="CliArchiveFolder" xml:space="preserve"><value>Архив {0}</value></data>
+  <data name="CliBotConnected" xml:space="preserve"><value>Подключён бот {0}.</value></data>
+  <data name="CliChooseChannels" xml:space="preserve"><value>Номера каналов через запятую или all для всех &gt; </value></data>
+  <data name="CliChooseNumber" xml:space="preserve"><value>Выберите номер из списка.</value></data>
+  <data name="CliChooseServer" xml:space="preserve"><value>Номер сервера &gt; </value></data>
+  <data name="ClickResume" xml:space="preserve"><value>Нажмите «Продолжить», чтобы возобновить копирование.</value></data>
+  <data name="CliExclusiveOptions" xml:space="preserve"><value>Выберите --resume или --status.</value></data>
+  <data name="CliHelp" xml:space="preserve"><value>{0} — Локальный архив каналов Discord
+
+  dotnet run --project cli -- [--language en|ru] [--output "папка для архивов"] [--api-delay-ms 2000] [--cdn-delay-ms 1000]
+  dotnet run --project cli -- [--language en|ru] --resume "каталог архива"
+  dotnet run --project cli -- [--language en|ru] --status "каталог архива"</value></data>
+  <data name="CliInputEnded" xml:space="preserve"><value>Ввод завершён.</value></data>
+  <data name="CliInteractiveRequired" xml:space="preserve"><value>Запустите импорт в интерактивном терминале.</value></data>
+  <data name="CliIntervals" xml:space="preserve"><value>Интервал Discord API {0} мс · интервал CDN {1} мс</value></data>
+  <data name="CliInvalidInterval" xml:space="preserve"><value>Укажите {0} целым числом миллисекунд от {1}.</value></data>
+  <data name="CliInvalidLanguage" xml:space="preserve"><value>Укажите en или ru для --language.</value></data>
+  <data name="CliMissingValue" xml:space="preserve"><value>Укажите значение {0}.</value></data>
+  <data name="CliNoChannels" xml:space="preserve"><value>На сервере нет каналов, историю которых может прочитать бот.</value></data>
+  <data name="CliOutputForNewArchive" xml:space="preserve"><value>Параметр --output применяется при создании нового архива.</value></data>
+  <data name="CliResumeCommand" xml:space="preserve"><value>Для продолжения запустите dotnet run --project cli -- --resume "{0}" --api-delay-ms {1} --cdn-delay-ms {2} --language {3}</value></data>
+  <data name="CliStopped" xml:space="preserve"><value>Операция остановлена. Уже записанный прогресс сохранён.</value></data>
+  <data name="CliTokenMissing" xml:space="preserve"><value>Токен не введён.</value></data>
+  <data name="CliTokenPrompt" xml:space="preserve"><value>Токен Discord-бота (ввод скрыт) &gt; </value></data>
+  <data name="CliUnknownOption" xml:space="preserve"><value>Неизвестный параметр {0}.</value></data>
+  <data name="CompletedProjectInvalid" xml:space="preserve"><value>Файл проекта отмечен завершённым, но данные снимка неполны или отсутствуют.</value></data>
+  <data name="ConnectedBot" xml:space="preserve"><value>Бот {0} подключён</value></data>
+  <data name="CopyComplete" xml:space="preserve"><value>Полностью скопирован</value></data>
+  <data name="CopyFinished" xml:space="preserve"><value>Копирование полностью завершено.</value></data>
+  <data name="CopyIncomplete" xml:space="preserve"><value>Копирование не завершено</value></data>
+  <data name="Copying" xml:space="preserve"><value>Копирование</value></data>
+  <data name="CopyingChannels" xml:space="preserve"><value>Копирую каналы…</value></data>
+  <data name="CopyPaused" xml:space="preserve"><value>Копирование на паузе. Прогресс сохранён.</value></data>
+  <data name="CopySettingsMissing" xml:space="preserve"><value>В файле проекта отсутствуют настройки копирования.</value></data>
+  <data name="DamagedFileCount" xml:space="preserve"><value>Повреждённых или отсутствующих файлов {0}.</value></data>
+  <data name="DiscordIdMissing" xml:space="preserve"><value>Discord вернул объект без идентификатора.</value></data>
+  <data name="DiscordTokenRejected" xml:space="preserve"><value>Discord отклонил токен бота (HTTP 401).</value></data>
+  <data name="DiscordUnavailable" xml:space="preserve"><value>Discord недоступен ({0}).</value></data>
+  <data name="EmptyProjectFile" xml:space="preserve"><value>Файл проекта пуст.</value></data>
+  <data name="EnterBotToken" xml:space="preserve"><value>Введите токен Discord-бота.</value></data>
+  <data name="EnterTokenToLoadServers" xml:space="preserve"><value>Введите токен, чтобы загрузить серверы.</value></data>
+  <data name="EnterTokenToResume" xml:space="preserve"><value>Введите токен бота и нажмите «Продолжить».</value></data>
+  <data name="FilesIntactWithGaps" xml:space="preserve"><value>Сохранённые файлы целы. В архиве есть пропуски.</value></data>
+  <data name="FilesReport" xml:space="preserve"><value>Файлы · {0}/{1} · {2:N0} байт</value></data>
+  <data name="FileVerificationFailed" xml:space="preserve"><value>Не прошёл проверку {0} ({1})</value></data>
+  <data name="InvalidApiInterval" xml:space="preserve"><value>Интервал Discord API должен быть целым числом от 30 мс.</value></data>
+  <data name="InvalidArchivePath" xml:space="preserve"><value>Некорректный путь к файлу в архиве.</value></data>
+  <data name="InvalidCdnInterval" xml:space="preserve"><value>Интервал CDN должен быть целым числом от 0 мс.</value></data>
+  <data name="InvalidProjectStatus" xml:space="preserve"><value>Статус проекта не соответствует сохранённым настройкам.</value></data>
+  <data name="InvalidTokenFormat" xml:space="preserve"><value>Введите токен Discord-бота одной строкой, без пробелов.</value></data>
+  <data name="KindAnnouncement" xml:space="preserve"><value>объявления</value></data>
+  <data name="KindForum" xml:space="preserve"><value>форум</value></data>
+  <data name="KindMedia" xml:space="preserve"><value>медиа</value></data>
+  <data name="KindStageChat" xml:space="preserve"><value>чат трибуны</value></data>
+  <data name="KindText" xml:space="preserve"><value>текст</value></data>
+  <data name="KindVoiceChat" xml:space="preserve"><value>чат голосового канала</value></data>
+  <data name="LoadingChannels" xml:space="preserve"><value>Загружаю каналы…</value></data>
+  <data name="LoadingServers" xml:space="preserve"><value>Загружаю серверы…</value></data>
+  <data name="MessageContentIntentRequired" xml:space="preserve"><value>Включите Message Content Intent для бота в Discord Developer Portal.</value></data>
+  <data name="MessageLocation" xml:space="preserve"><value> · сообщение {0}, канал {1}</value></data>
+  <data name="MessagePageSaved" xml:space="preserve"><value>«{0}» · сохранено сообщений на странице {1} · следующая позиция {2}</value></data>
+  <data name="MissingProjectServer" xml:space="preserve"><value>Сервер проекта отсутствует.</value></data>
+  <data name="NewProject" xml:space="preserve"><value>Новый проект</value></data>
+  <data name="NoChannelHistory" xml:space="preserve"><value>У бота нет доступа к истории каналов этого сервера.</value></data>
+  <data name="NoChannelsLoaded" xml:space="preserve"><value>Нет загруженных каналов</value></data>
+  <data name="NoServers" xml:space="preserve"><value>У бота нет доступных серверов.</value></data>
+  <data name="OperationStopped" xml:space="preserve"><value>Операция остановлена.</value></data>
+  <data name="OutsideDiscordCdn" xml:space="preserve"><value>Файл расположен вне Discord CDN.</value></data>
+  <data name="Pause" xml:space="preserve"><value>Пауза</value></data>
+  <data name="PausingCopy" xml:space="preserve"><value>Ставлю копирование на паузу…</value></data>
+  <data name="PendingDownload" xml:space="preserve"><value>ожидает загрузки</value></data>
+  <data name="PickProject" xml:space="preserve"><value>Выберите папку для создания или открытия проекта APEX Discord Snapshot Master</value></data>
+  <data name="PrivateThreadsLimited" xml:space="preserve"><value>Приватные ветки доступны только там, где бот участвует. Для всех нужен Manage Threads.</value></data>
+  <data name="ProjectChannelCount" xml:space="preserve"><value>Каналов в проекте: {0}</value></data>
+  <data name="ProjectFolderOccupied" xml:space="preserve"><value>В папке уже есть данные с именами, которые использует APEX Discord Snapshot Master. Выберите другую папку.</value></data>
+  <data name="ProjectNotFound" xml:space="preserve"><value>В выбранной папке нет проекта APEX Discord Snapshot Master.</value></data>
+  <data name="ProjectSnapshotMissing" xml:space="preserve"><value>Данные снимка проекта отсутствуют.</value></data>
+  <data name="RateLimitRepeated" xml:space="preserve"><value>Ответ 429 повторился. Операция остановлена ({0} {1}).</value></data>
+  <data name="RemovingViewer" xml:space="preserve"><value>Удаляю веб-интерфейс…</value></data>
+  <data name="RepeatedServerPage" xml:space="preserve"><value>Discord вернул повторную страницу серверов.</value></data>
+  <data name="Resume" xml:space="preserve"><value>Продолжить</value></data>
+  <data name="ResumingCopy" xml:space="preserve"><value>Продолжаю копирование…</value></data>
+  <data name="SavedTokenUnavailable" xml:space="preserve"><value>Введите токен бота заново. Сохранённый токен недоступен в этой учётной записи Windows.</value></data>
+  <data name="SelectChannels" xml:space="preserve"><value>Выберите каналы.</value></data>
+  <data name="SelectedChannelCount" xml:space="preserve"><value>Выбрано {0} из {1}</value></data>
+  <data name="SelectMultipleChannels" xml:space="preserve"><value>Отметьте каналы, которые хотите скопировать.</value></data>
+  <data name="SelectServer" xml:space="preserve"><value>Выберите сервер.</value></data>
+  <data name="SnapshotDataMissing" xml:space="preserve"><value>В архиве отсутствуют данные снимка.</value></data>
+  <data name="SnapshotReportHeading" xml:space="preserve"><value>Снимок от {0} · сервер {1}</value></data>
+  <data name="SqliteError" xml:space="preserve"><value>Ошибка SQLite ({0}).</value></data>
+  <data name="SqliteIntegrityFailure" xml:space="preserve"><value>SQLite обнаружила нарушение целостности архива.</value></data>
+  <data name="StoppingOperation" xml:space="preserve"><value>Останавливаю операцию…</value></data>
+  <data name="ThreadImportIncomplete" xml:space="preserve"><value>Ветки «{0}» выгружены частично. {1}</value></data>
+  <data name="ThreadListReadFailed" xml:space="preserve"><value>Не удалось дочитать список веток {0}.</value></data>
+  <data name="UiAddViewer" xml:space="preserve"><value>Добавить веб-интерфейс к архиву</value></data>
+  <data name="UiApiInterval" xml:space="preserve"><value>Интервал Discord API в миллисекундах</value></data>
+  <data name="UiApiMilliseconds" xml:space="preserve"><value>Discord API, мс</value></data>
+  <data name="UiArchiveChannels" xml:space="preserve"><value>Каналы для архива</value></data>
+  <data name="UiArchiveHeading" xml:space="preserve"><value>Архив каналов Discord</value></data>
+  <data name="UiBotToken" xml:space="preserve"><value>Токен Discord-бота</value></data>
+  <data name="UiCdnInterval" xml:space="preserve"><value>Интервал CDN в миллисекундах</value></data>
+  <data name="UiCdnMilliseconds" xml:space="preserve"><value>CDN, мс</value></data>
+  <data name="UiCheckArchive" xml:space="preserve"><value>Проверить архив</value></data>
+  <data name="UiClearSelection" xml:space="preserve"><value>Снять выбор</value></data>
+  <data name="UiConnect" xml:space="preserve"><value>Подключить</value></data>
+  <data name="UiConnection" xml:space="preserve"><value>Подключение</value></data>
+  <data name="UiDisconnected" xml:space="preserve"><value>Бот не подключён</value></data>
+  <data name="UiImportLog" xml:space="preserve"><value>Журнал импорта</value></data>
+  <data name="UiLanguage" xml:space="preserve"><value>Язык</value></data>
+  <data name="UiLog" xml:space="preserve"><value>Журнал</value></data>
+  <data name="UiNoRecentProjects" xml:space="preserve"><value>Здесь появятся открытые проекты.</value></data>
+  <data name="UiOpenProject" xml:space="preserve"><value>Создать или открыть</value></data>
+  <data name="UiRecentProjects" xml:space="preserve"><value>Последние проекты</value></data>
+  <data name="UiRequestIntervals" xml:space="preserve"><value>Интервалы запросов</value></data>
+  <data name="UiSelectAll" xml:space="preserve"><value>Отметить видимые</value></data>
+  <data name="UiSelectServer" xml:space="preserve"><value>Выберите сервер</value></data>
+  <data name="UiServer" xml:space="preserve"><value>Сервер</value></data>
+  <data name="UiServerAndChannels" xml:space="preserve"><value>Сервер и каналы</value></data>
+  <data name="UiSlowMode" xml:space="preserve"><value>Медленный режим</value></data>
+  <data name="UiSlowModeHint" xml:space="preserve"><value>Медленный режим · Discord API 5000 мс, CDN 3000 мс</value></data>
+  <data name="UiStart" xml:space="preserve"><value>Начать</value></data>
+  <data name="UiViewerHint" xml:space="preserve"><value>Файлы просмотрщика и Dockerfile в папке web-ui</value></data>
+  <data name="UnexpectedFileSize" xml:space="preserve"><value>Размер файла отличается от указанного Discord.</value></data>
+  <data name="UnexpectedMessagePage" xml:space="preserve"><value>Discord вернул повторяющиеся сообщения или страницу за пределами запрошенного диапазона.</value></data>
+  <data name="UnsupportedArchive" xml:space="preserve"><value>Неподдерживаемый формат архива.</value></data>
+  <data name="UnsupportedProject" xml:space="preserve"><value>Неподдерживаемый формат проекта.</value></data>
+  <data name="ViewerAdded" xml:space="preserve"><value>Веб-интерфейс добавлен. Инструкция в web-ui/README.md.</value></data>
+  <data name="ViewerFolderOccupied" xml:space="preserve"><value>Папка web-ui уже занята. Переместите её содержимое перед добавлением просмотрщика.</value></data>
+  <data name="ViewerRemoved" xml:space="preserve"><value>Файлы веб-интерфейса удалены.</value></data>
+  <data name="ViewerResourceMissing" xml:space="preserve"><value>Не найден файл веб-интерфейса {0}.</value></data>
+  <data name="WrongChecksum" xml:space="preserve"><value>неверная контрольная сумма</value></data>
+  <data name="WrongSize" xml:space="preserve"><value>неверный размер</value></data>
+  <data name="FinishCopyBeforeAdding" xml:space="preserve"><value>Продолжите и завершите текущее копирование, прежде чем добавлять каналы.</value></data>
+  <data name="ConnectToAddChannels" xml:space="preserve"><value>Подключите бота, чтобы добавить или обновить каналы с этого сервера.</value></data>
+  <data name="NoSearchMatches" xml:space="preserve"><value>Каналы не найдены</value></data>
+  <data name="ConfirmCopySummary" xml:space="preserve"><value>Сервер — {0}. Каналов для копирования — {1}.</value></data>
+  <data name="UiCloseProject" xml:space="preserve"><value>Закрыть проект</value></data>
+  <data name="UiClearHistory" xml:space="preserve"><value>Очистить историю</value></data>
+  <data name="UiRemoveRecentProject" xml:space="preserve"><value>Убрать из недавних проектов</value></data>
+  <data name="UiSearchChannels" xml:space="preserve"><value>Поиск каналов</value></data>
+  <data name="UiConfirmCopy" xml:space="preserve"><value>Подтверждение копирования</value></data>
+  <data name="UiCancelCopy" xml:space="preserve"><value>Отмена</value></data>
+  <data name="UiConfirmStart" xml:space="preserve"><value>Начать копирование</value></data>
+  <data name="ChannelCopiedAt" xml:space="preserve"><value>Последняя копия {0:g}</value></data>
+  <data name="ConfirmUpdateChannel" xml:space="preserve"><value>Обновить с последней копии</value></data>
+  <data name="ConfirmNewChannel" xml:space="preserve"><value>Скопировать всю историю</value></data>
+  <data name="SelectChannelsToSync" xml:space="preserve"><value>Отметьте каналы, которые хотите добавить или обновить.</value></data>
+  <data name="UiSelectNewChannels" xml:space="preserve"><value>Отметить видимые новые</value></data>
+  <data name="UiSyncChannels" xml:space="preserve"><value>Скопировать выбранные каналы</value></data>
+  <data name="UiOpenProjectFolder" xml:space="preserve"><value>Открыть директорию проекта</value></data>
+  <data name="UiViewArchive" xml:space="preserve"><value>Просмотреть архив в браузере</value></data>
+  <data name="UiTokenHelp" xml:space="preserve"><value>Где взять токен бота</value></data>
+  <data name="ViewerLaunchFailed" xml:space="preserve"><value>Не удалось запустить веб-просмотрщик архива.</value></data>
+  <data name="ViewerPythonMissing" xml:space="preserve"><value>Для запуска просмотрщика из исходников нужен Python 3.10 или новее.</value></data>
+  <data name="StartingViewer" xml:space="preserve"><value>Запуск веб-просмотрщика архива…</value></data>
+  <data name="ViewerRunning" xml:space="preserve"><value>Веб-просмотрщик архива запущен на этом компьютере.</value></data>
+  <data name="UiDisconnect" xml:space="preserve"><value>Отключить</value></data>
+  <data name="EnterReplacementBotToken" xml:space="preserve"><value>Введите токен другого бота.</value></data>
+  <data name="UiCloseHelp" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="UiTokenStepApplication" xml:space="preserve"><value>1. Войдите в Discord Developer Portal. Выберите своё приложение в разделе Applications или создайте его кнопкой New Application.</value></data>
+  <data name="UiTokenStepReset" xml:space="preserve"><value>2. Откройте Bot и нажмите Reset Token. Подтвердите сброс и введите код двухфакторной аутентификации, если Discord его запросит. Скопируйте токен, когда он появится. Сброс заменяет прежний токен.</value></data>
+  <data name="UiTokenStepIntent" xml:space="preserve"><value>3. На той же странице в разделе Privileged Gateway Intents включите Message Content Intent и сохраните изменение.</value></data>
+  <data name="UiTokenStepInstall" xml:space="preserve"><value>4. Если бота ещё нет на сервере, откройте Installation, включите Guild Install и выберите Discord Provided Link. Добавьте область bot и выдайте боту права View Channels и Read Message History для нужных каналов. Откройте ссылку установки и добавьте бота на сервер.</value></data>
+  <data name="UiTokenStepConnect" xml:space="preserve"><value>5. Вставьте токен в приложение и нажмите значок вилки. Чтобы возобновить приостановленное копирование, после ввода токена нажмите «Продолжить».</value></data>
+  <data name="UiTokenPrivate" xml:space="preserve"><value>Храните токен в секрете. Любой, у кого есть токен, может действовать от имени бота.</value></data>
+  <data name="UiAddAuthorization" xml:space="preserve"><value>Добавить авторизацию</value></data>
+  <data name="UiAuthorizationSettings" xml:space="preserve"><value>Настройки авторизации</value></data>
+  <data name="UiSaveAuthorization" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="UiOAuthSettings" xml:space="preserve"><value>Discord OAuth2</value></data>
+  <data name="UiOAuthInstruction" xml:space="preserve"><value>Введите данные приложения из раздела OAuth2 в Discord Developer Portal и зарегистрируйте там тот же Redirect URI.</value></data>
+  <data name="UiAuthorizationUsers" xml:space="preserve"><value>Пользователи</value></data>
+  <data name="UiAuthorizationUsersHint" xml:space="preserve"><value>Введите ID пользователей Discord и отметьте администраторов архива.</value></data>
+  <data name="UiAddArchiveUser" xml:space="preserve"><value>Добавить пользователя</value></data>
+  <data name="UiRemoveArchiveUser" xml:space="preserve"><value>Удалить</value></data>
+  <data name="UiNoArchiveUsers" xml:space="preserve"><value>Пользователи не добавлены.</value></data>
+  <data name="UiArchiveAdmin" xml:space="preserve"><value>Администратор</value></data>
+  <data name="UiAuthorizationGuilds" xml:space="preserve"><value>Серверы</value></data>
+  <data name="UiAuthorizationGuildsHint" xml:space="preserve"><value>Введите по одному ID сервера Discord на строку. Членство в любом из них даёт доступ.</value></data>
+  <data name="InvalidOAuthSettings" xml:space="preserve"><value>Укажите действительные Client ID, Client Secret и Redirect URI с путём /auth/callback. Для публичного адреса используйте HTTPS.</value></data>
+  <data name="InvalidAuthorizationSettings" xml:space="preserve"><value>Не удалось прочитать настройки авторизации архива.</value></data>
+  <data name="InvalidAuthorizationIds" xml:space="preserve"><value>В списке пользователей укажите уникальные цифровые ID Discord, а в списке серверов — цифровые ID.</value></data>
+  <data name="AuthorizationListEmpty" xml:space="preserve"><value>Добавьте хотя бы одного пользователя или сервер, чтобы выдать доступ к архиву.</value></data>
+  <data name="DesktopOAuthRedirect" xml:space="preserve"><value>Для архива настроен публичный Redirect URI. Откройте развёрнутый просмотрщик по публичному адресу. Для локального просмотра укажите, например, http://127.0.0.1:8080/auth/callback.</value></data>
+  <data name="UiOpenSshProject" xml:space="preserve"><value>Открыть или создать по SSH</value></data>
+  <data name="UiOpenSshShort" xml:space="preserve"><value>По SSH…</value></data>
+  <data name="UiSshInstructions" xml:space="preserve"><value>Подключение к серверу с SFTP. Вход выполняется по ключу OpenSSH или через ssh-agent. Перед первым подключением проверьте ключ сервера в OpenSSH.</value></data>
+  <data name="UiSshHost" xml:space="preserve"><value>Сервер или IPv4-адрес</value></data>
+  <data name="UiSshUser" xml:space="preserve"><value>Имя пользователя SSH</value></data>
+  <data name="UiSshPort" xml:space="preserve"><value>Порт</value></data>
+  <data name="UiSshPath" xml:space="preserve"><value>Абсолютный путь проекта на сервере</value></data>
+  <data name="UiSshSave" xml:space="preserve"><value>Синхронизировать</value></data>
+  <data name="SshInvalidAddress" xml:space="preserve"><value>Укажите сервер, имя пользователя, SSH-порт и абсолютный путь, например /srv/discord/archive.</value></data>
+  <data name="SshDownloading" xml:space="preserve"><value>Загружаю проект по SSH…</value></data>
+  <data name="SshSaving" xml:space="preserve"><value>Синхронизирую проект по SSH…</value></data>
+  <data name="SshSaved" xml:space="preserve"><value>Проект сохранён на сервере.</value></data>
+  <data name="SshAuthorizationSaved" xml:space="preserve"><value>Настройки авторизации сохранены на сервере.</value></data>
+  <data name="SshWorkingCopy" xml:space="preserve"><value>Локальная рабочая копия: {0}</value></data>
+  <data name="SshWorkingCopyRetained" xml:space="preserve"><value>{0} Локальная рабочая копия находится в {1}.</value></data>
+  <data name="SshCloseWithWorkingCopy" xml:space="preserve"><value>{0}&#10;&#10;Закрыть проект и оставить рабочую копию в {1}?</value></data>
+  <data name="SshClientMissing" xml:space="preserve"><value>Установите дополнительный компонент «Клиент OpenSSH» в Windows.</value></data>
+  <data name="SshInvalidTransfer" xml:space="preserve"><value>Сервер вернул некорректные данные проекта.</value></data>
+  <data name="SshTransferFailed" xml:space="preserve"><value>Передача по SSH не удалась. {0}</value></data>
+  <data name="SshRemoteChanged" xml:space="preserve"><value>После открытия этой копии проект на сервере изменился. Откройте проект заново, чтобы получить актуальное состояние. Рабочая копия сохранена.</value></data>
+  <data name="SshDatabaseJournal" xml:space="preserve"><value>На сервере есть файл журнала или WAL SQLite. Завершите запись в архив, затем повторите попытку.</value></data>
+  <data name="SshCopySyncFailed" xml:space="preserve"><value>{0} Синхронизация не удалась. {1}</value></data>
+  <data name="UiOAuthRedirectSteps" xml:space="preserve"><value>1. Определите адрес, по которому будут открывать архив. Для локального просмотра используйте http://127.0.0.1:8080/auth/callback. Для публичного просмотра добавьте /auth/callback к HTTPS-адресу сайта, например https://archive.example.org/auth/callback.&#10;2. Откройте Discord Developer Portal. Выберите приложение или нажмите New Application. В разделе OAuth2 скопируйте Client ID и Client Secret. При необходимости создайте секрет там же.&#10;3. В OAuth2 → Redirects нажмите Add Redirect, вставьте полный URI из шага 1 и сохраните изменения. Укажите ниже точно такой же URI, включая схему, адрес, порт, если он используется, и путь /auth/callback.&#10;4. Сохраните настройки, откройте просмотрщик по выбранному адресу и нажмите «Войти через Discord».</value></data>
+</root>

@@ -1,0 +1,12 @@
+services:
+  viewer:
+    image: docker.io/tordel/discord-snapshot-web:latest
+    pull_policy: always
+    user: "${DISCORD_ARCHIVE_UID:-65534}:${DISCORD_ARCHIVE_GID:-65534}"
+    ports:
+      - "127.0.0.1:${DISCORD_ARCHIVE_PORT:-8080}:8080"
+    volumes:
+      - type: bind
+        source: .
+        target: /archive
+        read_only: ${DISCORD_ARCHIVE_READ_ONLY:-false}

@@ -1,0 +1,11 @@
+archives/
+project.json
+dist/
+*.sqlite
+*.sqlite-journal
+*.part
+.env
+.discord-auth.json*
+__pycache__/
+**/bin/
+**/obj/

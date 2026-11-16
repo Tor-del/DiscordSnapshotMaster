@@ -1,0 +1,8 @@
+Twemoji color emoji graphics from the Discord fork
+https://github.com/discord/twemoji/tree/187e1b77ee80532eb584bcf62a2266942fa39cf9
+
+Copyright (c) 2014–2021 Twitter and other contributors.
+Copyright (c) 2022–present Jason Sofonia, Justine De Caires, and other contributors.
+
+The unmodified PNG artwork is distributed under Creative Commons Attribution 4.0 International.
+https://creativecommons.org/licenses/by/4.0/

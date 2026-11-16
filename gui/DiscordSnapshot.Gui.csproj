@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>APEX Discord Snapshot Master</AssemblyName>
+    <RootNamespace>DiscordSnapshot.Gui</RootNamespace>
+    <Product>APEX DSM</Product>
+    <ApplicationIcon>Assets/App.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../core/DiscordSnapshot.Core.csproj" />
+    <Resource Include="Assets/App.ico" />
+    <Content Include="../web-ui/Twemoji-NOTICE.txt" Link="Twemoji-NOTICE.txt" CopyToPublishDirectory="PreserveNewest" />
+    <EmbeddedResource Include="../web-ui/*" LogicalName="ArchiveWebUi/%(Filename)%(Extension)" />
+    <Content Include="../web-ui/server.py;../web-ui/auth.py;../web-ui/archive_admin.py;../web-ui/index.html;../web-ui/style.css;../web-ui/app.js;../web-ui/Twemoji.zip" Link="viewer/%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

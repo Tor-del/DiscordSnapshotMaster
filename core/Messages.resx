@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="ActiveThreadsFailed" xml:space="preserve"><value>Could not load active threads. {0}</value></data>
+  <data name="AddingViewer" xml:space="preserve"><value>Adding the web viewer…</value></data>
+  <data name="ArchiveBusy" xml:space="preserve"><value>Another process is using the archive.</value></data>
+  <data name="ArchiveDatabaseMissing" xml:space="preserve"><value>The selected folder does not contain {0}. Choose a snapshot folder.</value></data>
+  <data name="ArchiveHasGaps" xml:space="preserve"><value>The archive has gaps. See the log for details.</value></data>
+  <data name="ArchiveOpenFailed" xml:space="preserve"><value>Could not open snapshot.sqlite in the selected folder.</value></data>
+  <data name="ArchivePassed" xml:space="preserve"><value>SQLite and saved files passed verification.</value></data>
+  <data name="ArchiveViewer" xml:space="preserve"><value>Archive Web Viewer</value></data>
+  <data name="AssetError" xml:space="preserve"><value>File {0} {1}</value></data>
+  <data name="BotCannotReadChannel" xml:space="preserve"><value>The bot cannot read this channel's history.</value></data>
+  <data name="BotCannotReadParent" xml:space="preserve"><value>The bot cannot read the parent channel's history.</value></data>
+  <data name="BotConnectionRequired" xml:space="preserve"><value>Connect the bot.</value></data>
+  <data name="CdnDownloadFailed" xml:space="preserve"><value>Could not download the file from Discord's CDN.</value></data>
+  <data name="CdnReadFailed" xml:space="preserve"><value>Could not finish reading the file from Discord's CDN.</value></data>
+  <data name="ChannelComplete" xml:space="preserve"><value>complete</value></data>
+  <data name="ChannelImportIncomplete" xml:space="preserve"><value>Channel “{0}” is incomplete. {1}</value></data>
+  <data name="ChannelIncomplete" xml:space="preserve"><value>incomplete</value></data>
+  <data name="ChannelReport" xml:space="preserve"><value>  {0} [{1}] · {2} messages · {3}</value></data>
+  <data name="ChannelSelectionUnavailable" xml:space="preserve"><value>Some selected channels are unavailable. Update your selection.</value></data>
+  <data name="CheckingArchive" xml:space="preserve"><value>Checking SQLite and archived files…</value></data>
+  <data name="CliArchiveFolder" xml:space="preserve"><value>Archive {0}</value></data>
+  <data name="CliBotConnected" xml:space="preserve"><value>Connected bot {0}.</value></data>
+  <data name="CliChooseChannels" xml:space="preserve"><value>Enter channel numbers separated by commas or type all &gt; </value></data>
+  <data name="CliChooseNumber" xml:space="preserve"><value>Choose a number from the list.</value></data>
+  <data name="CliChooseServer" xml:space="preserve"><value>Server number &gt; </value></data>
+  <data name="ClickResume" xml:space="preserve"><value>Click Resume to continue copying.</value></data>
+  <data name="CliExclusiveOptions" xml:space="preserve"><value>Choose either --resume or --status.</value></data>
+  <data name="CliHelp" xml:space="preserve"><value>{0} — Local Discord channel archive
+
+  dotnet run --project cli -- [--language en|ru] [--output "archive folder"] [--api-delay-ms 2000] [--cdn-delay-ms 1000]
+  dotnet run --project cli -- [--language en|ru] --resume "snapshot folder"
+  dotnet run --project cli -- [--language en|ru] --status "snapshot folder"</value></data>
+  <data name="CliInputEnded" xml:space="preserve"><value>Input ended.</value></data>
+  <data name="CliInteractiveRequired" xml:space="preserve"><value>Run the import in an interactive terminal.</value></data>
+  <data name="CliIntervals" xml:space="preserve"><value>Discord API interval: {0} ms · CDN interval: {1} ms</value></data>
+  <data name="CliInvalidInterval" xml:space="preserve"><value>Set {0} to a whole number of milliseconds of at least {1}.</value></data>
+  <data name="CliInvalidLanguage" xml:space="preserve"><value>Choose en or ru for --language.</value></data>
+  <data name="CliMissingValue" xml:space="preserve"><value>Provide a value for {0}.</value></data>
+  <data name="CliNoChannels" xml:space="preserve"><value>The bot cannot read any channel history on the server.</value></data>
+  <data name="CliOutputForNewArchive" xml:space="preserve"><value>Use --output when creating a new archive.</value></data>
+  <data name="CliResumeCommand" xml:space="preserve"><value>To resume, run dotnet run --project cli -- --resume "{0}" --api-delay-ms {1} --cdn-delay-ms {2} --language {3}</value></data>
+  <data name="CliStopped" xml:space="preserve"><value>Operation stopped. Progress already written was saved.</value></data>
+  <data name="CliTokenMissing" xml:space="preserve"><value>No token entered.</value></data>
+  <data name="CliTokenPrompt" xml:space="preserve"><value>Discord bot token (hidden input) &gt; </value></data>
+  <data name="CliUnknownOption" xml:space="preserve"><value>Unknown option {0}.</value></data>
+  <data name="CompletedProjectInvalid" xml:space="preserve"><value>The project file indicates a completed copy, but the snapshot data is incomplete or missing.</value></data>
+  <data name="ConnectedBot" xml:space="preserve"><value>Bot {0} connected</value></data>
+  <data name="CopyComplete" xml:space="preserve"><value>Copy complete</value></data>
+  <data name="CopyFinished" xml:space="preserve"><value>Copy complete.</value></data>
+  <data name="CopyIncomplete" xml:space="preserve"><value>Copy incomplete</value></data>
+  <data name="Copying" xml:space="preserve"><value>Copying</value></data>
+  <data name="CopyingChannels" xml:space="preserve"><value>Copying channels…</value></data>
+  <data name="CopyPaused" xml:space="preserve"><value>Copy paused. Progress saved.</value></data>
+  <data name="CopySettingsMissing" xml:space="preserve"><value>The project file is missing copy settings.</value></data>
+  <data name="DamagedFileCount" xml:space="preserve"><value>Damaged or missing files: {0}.</value></data>
+  <data name="DiscordIdMissing" xml:space="preserve"><value>Discord returned an object without an ID.</value></data>
+  <data name="DiscordTokenRejected" xml:space="preserve"><value>Discord rejected the bot token (HTTP 401).</value></data>
+  <data name="DiscordUnavailable" xml:space="preserve"><value>Discord is unavailable ({0}).</value></data>
+  <data name="EmptyProjectFile" xml:space="preserve"><value>The project file is empty.</value></data>
+  <data name="EnterBotToken" xml:space="preserve"><value>Enter a Discord bot token.</value></data>
+  <data name="EnterTokenToLoadServers" xml:space="preserve"><value>Enter the bot token to load servers.</value></data>
+  <data name="EnterTokenToResume" xml:space="preserve"><value>Enter the bot token and click Resume.</value></data>
+  <data name="FilesIntactWithGaps" xml:space="preserve"><value>Saved files are intact. The archive has gaps.</value></data>
+  <data name="FilesReport" xml:space="preserve"><value>Files · {0}/{1} · {2:N0} bytes</value></data>
+  <data name="FileVerificationFailed" xml:space="preserve"><value>Verification failed for {0} ({1})</value></data>
+  <data name="InvalidApiInterval" xml:space="preserve"><value>The Discord API interval must be a whole number of at least 30 ms.</value></data>
+  <data name="InvalidArchivePath" xml:space="preserve"><value>Invalid file path in the archive.</value></data>
+  <data name="InvalidCdnInterval" xml:space="preserve"><value>The CDN interval must be a whole number of at least 0 ms.</value></data>
+  <data name="InvalidProjectStatus" xml:space="preserve"><value>The project status does not match the saved settings.</value></data>
+  <data name="InvalidTokenFormat" xml:space="preserve"><value>Enter the Discord bot token on one line without spaces.</value></data>
+  <data name="KindAnnouncement" xml:space="preserve"><value>announcements</value></data>
+  <data name="KindForum" xml:space="preserve"><value>forum</value></data>
+  <data name="KindMedia" xml:space="preserve"><value>media</value></data>
+  <data name="KindStageChat" xml:space="preserve"><value>stage channel chat</value></data>
+  <data name="KindText" xml:space="preserve"><value>text</value></data>
+  <data name="KindVoiceChat" xml:space="preserve"><value>voice channel chat</value></data>
+  <data name="LoadingChannels" xml:space="preserve"><value>Loading channels…</value></data>
+  <data name="LoadingServers" xml:space="preserve"><value>Loading servers…</value></data>
+  <data name="MessageContentIntentRequired" xml:space="preserve"><value>Enable Message Content Intent for the bot in the Discord Developer Portal.</value></data>
+  <data name="MessageLocation" xml:space="preserve"><value> · message {0}, channel {1}</value></data>
+  <data name="MessagePageSaved" xml:space="preserve"><value>“{0}” · messages saved on this page: {1} · next cursor: {2}</value></data>
+  <data name="MissingProjectServer" xml:space="preserve"><value>The project is missing its server.</value></data>
+  <data name="NewProject" xml:space="preserve"><value>New project</value></data>
+  <data name="NoChannelHistory" xml:space="preserve"><value>The bot cannot read channel history on this server.</value></data>
+  <data name="NoChannelsLoaded" xml:space="preserve"><value>No channels loaded</value></data>
+  <data name="NoServers" xml:space="preserve"><value>The bot has no accessible servers.</value></data>
+  <data name="OperationStopped" xml:space="preserve"><value>Operation stopped.</value></data>
+  <data name="OutsideDiscordCdn" xml:space="preserve"><value>The file is hosted outside Discord's CDN.</value></data>
+  <data name="Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="PausingCopy" xml:space="preserve"><value>Pausing copy…</value></data>
+  <data name="PendingDownload" xml:space="preserve"><value>pending download</value></data>
+  <data name="PickProject" xml:space="preserve"><value>Choose a folder to create or open a project</value></data>
+  <data name="PrivateThreadsLimited" xml:space="preserve"><value>The bot can access private threads it has joined. Manage Threads is required to access all private threads.</value></data>
+  <data name="ProjectChannelCount" xml:space="preserve"><value>Channels in project: {0}</value></data>
+  <data name="ProjectFolderOccupied" xml:space="preserve"><value>The folder already contains files reserved for APEX Discord Snapshot Master. Choose another folder.</value></data>
+  <data name="ProjectNotFound" xml:space="preserve"><value>The selected folder does not contain an APEX Discord Snapshot Master project.</value></data>
+  <data name="ProjectSnapshotMissing" xml:space="preserve"><value>The project snapshot data is missing.</value></data>
+  <data name="RateLimitRepeated" xml:space="preserve"><value>HTTP 429 recurred. The operation stopped ({0} {1}).</value></data>
+  <data name="RemovingViewer" xml:space="preserve"><value>Removing the web viewer…</value></data>
+  <data name="RepeatedServerPage" xml:space="preserve"><value>Discord returned a duplicate page of servers.</value></data>
+  <data name="Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="ResumingCopy" xml:space="preserve"><value>Resuming copy…</value></data>
+  <data name="SavedTokenUnavailable" xml:space="preserve"><value>Re-enter the bot token. The saved token is unavailable to this Windows account.</value></data>
+  <data name="SelectChannels" xml:space="preserve"><value>Select channels.</value></data>
+  <data name="SelectedChannelCount" xml:space="preserve"><value>Selected {0} of {1}</value></data>
+  <data name="SelectMultipleChannels" xml:space="preserve"><value>Check the channels you want to copy.</value></data>
+  <data name="SelectServer" xml:space="preserve"><value>Select a server.</value></data>
+  <data name="SnapshotDataMissing" xml:space="preserve"><value>The archive is missing snapshot data.</value></data>
+  <data name="SnapshotReportHeading" xml:space="preserve"><value>Snapshot from {0} · server {1}</value></data>
+  <data name="SqliteError" xml:space="preserve"><value>SQLite error ({0}).</value></data>
+  <data name="SqliteIntegrityFailure" xml:space="preserve"><value>SQLite detected an archive integrity failure.</value></data>
+  <data name="StoppingOperation" xml:space="preserve"><value>Stopping operation…</value></data>
+  <data name="ThreadImportIncomplete" xml:space="preserve"><value>Thread export for “{0}” is incomplete. {1}</value></data>
+  <data name="ThreadListReadFailed" xml:space="preserve"><value>Could not finish reading the thread list for channel {0}.</value></data>
+  <data name="UiAddViewer" xml:space="preserve"><value>Add web viewer to archive</value></data>
+  <data name="UiApiInterval" xml:space="preserve"><value>Discord API interval in milliseconds</value></data>
+  <data name="UiApiMilliseconds" xml:space="preserve"><value>Discord API, ms</value></data>
+  <data name="UiArchiveChannels" xml:space="preserve"><value>Channels to archive</value></data>
+  <data name="UiArchiveHeading" xml:space="preserve"><value>Discord Channel Archive</value></data>
+  <data name="UiBotToken" xml:space="preserve"><value>Discord bot token</value></data>
+  <data name="UiCdnInterval" xml:space="preserve"><value>CDN interval in milliseconds</value></data>
+  <data name="UiCdnMilliseconds" xml:space="preserve"><value>CDN, ms</value></data>
+  <data name="UiCheckArchive" xml:space="preserve"><value>Check Archive</value></data>
+  <data name="UiClearSelection" xml:space="preserve"><value>Clear Selection</value></data>
+  <data name="UiConnect" xml:space="preserve"><value>Connect</value></data>
+  <data name="UiConnection" xml:space="preserve"><value>Connection</value></data>
+  <data name="UiDisconnected" xml:space="preserve"><value>Bot disconnected</value></data>
+  <data name="UiImportLog" xml:space="preserve"><value>Import log</value></data>
+  <data name="UiLanguage" xml:space="preserve"><value>Language</value></data>
+  <data name="UiLog" xml:space="preserve"><value>Log</value></data>
+  <data name="UiNoRecentProjects" xml:space="preserve"><value>Projects you open will appear here.</value></data>
+  <data name="UiOpenProject" xml:space="preserve"><value>Create or Open</value></data>
+  <data name="UiRecentProjects" xml:space="preserve"><value>Recent Projects</value></data>
+  <data name="UiRequestIntervals" xml:space="preserve"><value>Request Intervals</value></data>
+  <data name="UiSelectAll" xml:space="preserve"><value>Check Visible</value></data>
+  <data name="UiSelectServer" xml:space="preserve"><value>Select a server</value></data>
+  <data name="UiServer" xml:space="preserve"><value>Server</value></data>
+  <data name="UiServerAndChannels" xml:space="preserve"><value>Server and Channels</value></data>
+  <data name="UiSlowMode" xml:space="preserve"><value>Slow Mode</value></data>
+  <data name="UiSlowModeHint" xml:space="preserve"><value>Slow mode · Discord API 5000 ms, CDN 3000 ms</value></data>
+  <data name="UiStart" xml:space="preserve"><value>Start</value></data>
+  <data name="UiViewerHint" xml:space="preserve"><value>Viewer files and Dockerfile in the web-ui folder</value></data>
+  <data name="UnexpectedFileSize" xml:space="preserve"><value>The file size differs from the size reported by Discord.</value></data>
+  <data name="UnexpectedMessagePage" xml:space="preserve"><value>Discord returned duplicate messages or a page outside the requested range.</value></data>
+  <data name="UnsupportedArchive" xml:space="preserve"><value>Unsupported archive format.</value></data>
+  <data name="UnsupportedProject" xml:space="preserve"><value>Unsupported project format.</value></data>
+  <data name="ViewerAdded" xml:space="preserve"><value>Web viewer added. See web-ui/README.md for instructions.</value></data>
+  <data name="ViewerFolderOccupied" xml:space="preserve"><value>The web-ui folder is already in use. Move its contents before adding the viewer.</value></data>
+  <data name="ViewerRemoved" xml:space="preserve"><value>Web viewer files removed.</value></data>
+  <data name="ViewerResourceMissing" xml:space="preserve"><value>Web viewer file not found: {0}.</value></data>
+  <data name="WrongChecksum" xml:space="preserve"><value>incorrect checksum</value></data>
+  <data name="WrongSize" xml:space="preserve"><value>incorrect size</value></data>
+  <data name="FinishCopyBeforeAdding" xml:space="preserve"><value>Resume and finish the current copy before adding more channels.</value></data>
+  <data name="ConnectToAddChannels" xml:space="preserve"><value>Connect a bot to add or update channels from this server.</value></data>
+  <data name="NoSearchMatches" xml:space="preserve"><value>No matching channels</value></data>
+  <data name="ConfirmCopySummary" xml:space="preserve"><value>Server — {0}. Channels to copy — {1}.</value></data>
+  <data name="UiCloseProject" xml:space="preserve"><value>Close Project</value></data>
+  <data name="UiClearHistory" xml:space="preserve"><value>Clear History</value></data>
+  <data name="UiRemoveRecentProject" xml:space="preserve"><value>Remove from recent projects</value></data>
+  <data name="UiSearchChannels" xml:space="preserve"><value>Search channels</value></data>
+  <data name="UiConfirmCopy" xml:space="preserve"><value>Confirm Copy</value></data>
+  <data name="UiCancelCopy" xml:space="preserve"><value>Cancel</value></data>
+  <data name="UiConfirmStart" xml:space="preserve"><value>Start Copying</value></data>
+  <data name="ChannelCopiedAt" xml:space="preserve"><value>Last copy {0:g}</value></data>
+  <data name="ConfirmUpdateChannel" xml:space="preserve"><value>Update from last copy</value></data>
+  <data name="ConfirmNewChannel" xml:space="preserve"><value>Copy full history</value></data>
+  <data name="SelectChannelsToSync" xml:space="preserve"><value>Check the channels you want to add or update.</value></data>
+  <data name="UiSelectNewChannels" xml:space="preserve"><value>Check Visible New</value></data>
+  <data name="UiSyncChannels" xml:space="preserve"><value>Copy Selected Channels</value></data>
+  <data name="UiOpenProjectFolder" xml:space="preserve"><value>Open Project Folder</value></data>
+  <data name="UiViewArchive" xml:space="preserve"><value>View Archive in Browser</value></data>
+  <data name="UiTokenHelp" xml:space="preserve"><value>Where to get a bot token</value></data>
+  <data name="ViewerLaunchFailed" xml:space="preserve"><value>The archive viewer could not start.</value></data>
+  <data name="ViewerPythonMissing" xml:space="preserve"><value>Python 3.10 or later is needed to run the viewer from source.</value></data>
+  <data name="StartingViewer" xml:space="preserve"><value>Starting the archive viewer…</value></data>
+  <data name="ViewerRunning" xml:space="preserve"><value>The archive viewer is running locally.</value></data>
+  <data name="UiDisconnect" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="EnterReplacementBotToken" xml:space="preserve"><value>Enter a token to connect another bot.</value></data>
+  <data name="UiCloseHelp" xml:space="preserve"><value>Close</value></data>
+  <data name="UiTokenStepApplication" xml:space="preserve"><value>1. Sign in to Discord Developer Portal. Select your app under Applications, or click New Application to create one.</value></data>
+  <data name="UiTokenStepReset" xml:space="preserve"><value>2. Open Bot and click Reset Token. Confirm the reset and enter your two-factor code if Discord asks. Copy the token when it appears. Resetting replaces the previous token.</value></data>
+  <data name="UiTokenStepIntent" xml:space="preserve"><value>3. On the Bot page, enable Message Content Intent under Privileged Gateway Intents and save the change.</value></data>
+  <data name="UiTokenStepInstall" xml:space="preserve"><value>4. If the bot is new to the server, open Installation, enable Guild Install and select Discord Provided Link. Add the bot scope and grant View Channels and Read Message History for the channels you want to archive. Open the install link and add the bot to your server.</value></data>
+  <data name="UiTokenStepConnect" xml:space="preserve"><value>5. Paste the token into this app and click the plug icon. To resume a paused copy, click Resume after entering the token.</value></data>
+  <data name="UiTokenPrivate" xml:space="preserve"><value>Keep the token private. Anyone with it can act as your bot.</value></data>
+  <data name="UiAddAuthorization" xml:space="preserve"><value>Add authorization</value></data>
+  <data name="UiAuthorizationSettings" xml:space="preserve"><value>Authorization settings</value></data>
+  <data name="UiSaveAuthorization" xml:space="preserve"><value>Save</value></data>
+  <data name="UiOAuthSettings" xml:space="preserve"><value>Discord OAuth2</value></data>
+  <data name="UiOAuthInstruction" xml:space="preserve"><value>Enter the credentials from the application’s OAuth2 settings in the Discord Developer Portal and register the same Redirect URI there.</value></data>
+  <data name="UiAuthorizationUsers" xml:space="preserve"><value>Users</value></data>
+  <data name="UiAuthorizationUsersHint" xml:space="preserve"><value>Enter Discord user IDs and mark archive administrators.</value></data>
+  <data name="UiAddArchiveUser" xml:space="preserve"><value>Add user</value></data>
+  <data name="UiRemoveArchiveUser" xml:space="preserve"><value>Remove</value></data>
+  <data name="UiNoArchiveUsers" xml:space="preserve"><value>No users added.</value></data>
+  <data name="UiArchiveAdmin" xml:space="preserve"><value>Administrator</value></data>
+  <data name="UiAuthorizationGuilds" xml:space="preserve"><value>Guilds</value></data>
+  <data name="UiAuthorizationGuildsHint" xml:space="preserve"><value>Enter one Discord server ID per line. Membership in any listed server grants access.</value></data>
+  <data name="InvalidOAuthSettings" xml:space="preserve"><value>Enter a valid Client ID, Client Secret, and Redirect URI ending in /auth/callback. Use HTTPS for a public address.</value></data>
+  <data name="InvalidAuthorizationSettings" xml:space="preserve"><value>The archive authorization settings could not be read.</value></data>
+  <data name="InvalidAuthorizationIds" xml:space="preserve"><value>Use unique numeric Discord IDs in the user list and numeric Discord IDs in the guild list.</value></data>
+  <data name="AuthorizationListEmpty" xml:space="preserve"><value>Add at least one user or guild to grant access to the archive.</value></data>
+  <data name="DesktopOAuthRedirect" xml:space="preserve"><value>This archive uses a public OAuth2 redirect. Open the deployed web viewer at the public address. For local viewing, configure a loopback redirect such as http://127.0.0.1:8080/auth/callback.</value></data>
+  <data name="UiOpenSshProject" xml:space="preserve"><value>Open or create over SSH</value></data>
+  <data name="UiOpenSshShort" xml:space="preserve"><value>Over SSH…</value></data>
+  <data name="UiSshInstructions" xml:space="preserve"><value>Use a server with SFTP enabled and sign in with an OpenSSH key or ssh-agent. Verify the host key in OpenSSH before the first connection.</value></data>
+  <data name="UiSshHost" xml:space="preserve"><value>Host or IPv4 address</value></data>
+  <data name="UiSshUser" xml:space="preserve"><value>SSH username</value></data>
+  <data name="UiSshPort" xml:space="preserve"><value>Port</value></data>
+  <data name="UiSshPath" xml:space="preserve"><value>Absolute project path on the server</value></data>
+  <data name="UiSshSave" xml:space="preserve"><value>Synchronize</value></data>
+  <data name="SshInvalidAddress" xml:space="preserve"><value>Enter the server, username, SSH port and an absolute path such as /srv/discord/archive.</value></data>
+  <data name="SshDownloading" xml:space="preserve"><value>Downloading project over SSH…</value></data>
+  <data name="SshSaving" xml:space="preserve"><value>Synchronizing the project over SSH…</value></data>
+  <data name="SshSaved" xml:space="preserve"><value>The project is saved on the server.</value></data>
+  <data name="SshAuthorizationSaved" xml:space="preserve"><value>Authorization settings are saved on the server.</value></data>
+  <data name="SshWorkingCopy" xml:space="preserve"><value>Local working copy: {0}</value></data>
+  <data name="SshWorkingCopyRetained" xml:space="preserve"><value>{0} The local working copy is at {1}.</value></data>
+  <data name="SshCloseWithWorkingCopy" xml:space="preserve"><value>{0}&#10;&#10;Close the project and keep the working copy at {1}?</value></data>
+  <data name="SshClientMissing" xml:space="preserve"><value>Install the Windows OpenSSH Client optional feature.</value></data>
+  <data name="SshInvalidTransfer" xml:space="preserve"><value>The server returned an invalid project transfer.</value></data>
+  <data name="SshTransferFailed" xml:space="preserve"><value>SSH transfer failed. {0}</value></data>
+  <data name="SshRemoteChanged" xml:space="preserve"><value>The project changed on the server after this copy was opened. Reopen the server project to get its latest state. This working copy is still available.</value></data>
+  <data name="SshDatabaseJournal" xml:space="preserve"><value>The server has an active SQLite journal or WAL file. Close the process writing to the archive, then retry.</value></data>
+  <data name="SshCopySyncFailed" xml:space="preserve"><value>{0} Synchronization failed. {1}</value></data>
+  <data name="UiOAuthRedirectSteps" xml:space="preserve"><value>1. Choose the address visitors will use. For local viewing use http://127.0.0.1:8080/auth/callback. For a public viewer use its HTTPS address followed by /auth/callback, for example https://archive.example.org/auth/callback.&#10;2. Open the Discord Developer Portal and select an application, or choose New Application. In OAuth2, copy Client ID and Client Secret. Generate a secret there if needed.&#10;3. In OAuth2 → Redirects choose Add Redirect, paste the full URI from step 1 and save changes. Paste the exact same URI below, including the scheme, host, port if used, and /auth/callback.&#10;4. Save these settings, start the viewer at that address and select Sign in with Discord.</value></data>
+</root>
