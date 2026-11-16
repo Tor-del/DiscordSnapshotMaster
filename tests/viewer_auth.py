@@ -141,6 +141,21 @@ class ViewerAuthorizationTests(unittest.TestCase):
         self.assertIn(b"<title>Renamed</title>", self.request("/")[2])
         self.assertEqual(self.request("/api/snapshot", viewer)[2]["projectName"], "Renamed")
 
+    def test_skipped_media_does_not_leave_snapshot_pending(self):
+        self.config.unlink()
+        with closing(sqlite3.connect(self.database)) as db, db:
+            db.execute("UPDATE assets SET sha256 = NULL, error = 'CDN HTTP 404' WHERE id = ?", (ASSET,))
+        snapshot = self.request("/api/snapshot")[2]
+        self.assertTrue(snapshot["incomplete"])
+        self.assertFalse(snapshot["skippedMedia"])
+        with closing(sqlite3.connect(self.database)) as db, db:
+            db.execute("CREATE TABLE skipped_assets (asset_id TEXT PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE)")
+            db.execute("INSERT INTO skipped_assets VALUES (?)", (ASSET,))
+        snapshot = self.request("/api/snapshot")[2]
+        self.assertFalse(snapshot["incomplete"])
+        self.assertTrue(snapshot["skippedMedia"])
+        self.assertEqual(self.request("/media/" + ASSET)[0], 404)
+
     def test_permissions_and_deletion(self):
         for route in ("/api/snapshot", "/api/messages?channel=3", "/media/" + ASSET):
             self.assertEqual(self.request(route)[0], 401)

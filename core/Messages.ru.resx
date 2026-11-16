@@ -65,7 +65,7 @@
   <data name="EmptyProjectFile" xml:space="preserve"><value>Файл проекта пуст.</value></data>
   <data name="EnterBotToken" xml:space="preserve"><value>Введите токен Discord-бота.</value></data>
   <data name="EnterTokenToLoadServers" xml:space="preserve"><value>Введите токен, чтобы загрузить серверы.</value></data>
-  <data name="EnterTokenToResume" xml:space="preserve"><value>Введите токен бота и нажмите «Продолжить».</value></data>
+  <data name="EnterTokenToResume" xml:space="preserve"><value>Введите токен бота и нажмите «Подключить» или «Продолжить».</value></data>
   <data name="FilesIntactWithGaps" xml:space="preserve"><value>Сохранённые файлы целы. В архиве есть пропуски.</value></data>
   <data name="FilesReport" xml:space="preserve"><value>Файлы · {0}/{1} · {2:N0} байт</value></data>
   <data name="FileVerificationFailed" xml:space="preserve"><value>Не прошёл проверку {0} ({1})</value></data>
@@ -106,7 +106,7 @@
   <data name="RepeatedServerPage" xml:space="preserve"><value>Discord вернул повторную страницу серверов.</value></data>
   <data name="Resume" xml:space="preserve"><value>Продолжить</value></data>
   <data name="ResumingCopy" xml:space="preserve"><value>Продолжаю копирование…</value></data>
-  <data name="SavedTokenUnavailable" xml:space="preserve"><value>Введите токен бота заново. Сохранённый токен недоступен в этой учётной записи Windows.</value></data>
+  <data name="SavedTokenUnavailable" xml:space="preserve"><value>Сохранённый токен недоступен на этом компьютере или в этой учётной записи Windows. Введите токен бота и нажмите «Подключить» или «Продолжить».</value></data>
   <data name="SelectChannels" xml:space="preserve"><value>Выберите каналы.</value></data>
   <data name="SelectedChannelCount" xml:space="preserve"><value>Выбрано {0} из {1}</value></data>
   <data name="SelectMultipleChannels" xml:space="preserve"><value>Отметьте каналы, которые хотите скопировать.</value></data>
@@ -246,4 +246,10 @@
   <data name="ChannelCopySkipped" xml:space="preserve"><value>Оставшаяся история пропущена пользователем.</value></data>
   <data name="ChannelManuallyCompleted" xml:space="preserve"><value>История отмечена пользователем как скопированная.</value></data>
   <data name="CopySelectionChanged" xml:space="preserve"><value>Список каналов для копирования изменился. Откройте проект заново и повторите попытку.</value></data>
+  <data name="UiSkipFailedFiles" xml:space="preserve"><value>Пропустить ошибочные файлы</value></data>
+  <data name="ConfirmSkipFailedFiles" xml:space="preserve"><value>Пропустить файлы, которые завершились ошибкой загрузки ({0})? Сохранённые сообщения и файлы останутся в архиве. Пропуски и причины ошибок будут указаны в отчёте проверки.</value></data>
+  <data name="CopyFinishedWithSkippedFiles" xml:space="preserve"><value>Копирование завершено. Пропущено файлов: {0}.</value></data>
+  <data name="SkippedFilesWithPendingCopy" xml:space="preserve"><value>Пропущено файлов: {0}. В очереди остались другие элементы.</value></data>
+  <data name="FileSkipped" xml:space="preserve"><value>Пропущен пользователем. {0}</value></data>
+  <data name="ArchivePassedWithSkippedFiles" xml:space="preserve"><value>SQLite и сохранённые файлы прошли проверку. Пропущено файлов: {0}.</value></data>
 </root>

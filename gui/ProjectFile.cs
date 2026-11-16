@@ -21,16 +21,26 @@ internal sealed record CopySettings(DiscordServer Server, ChannelChoice[] Channe
     public string? ReadToken()
     {
         if (Token is null) return null;
+        var bytes = UnprotectToken() ?? throw new InvalidOperationException(Strings.Get("SavedTokenUnavailable"));
+        try { return Encoding.UTF8.GetString(bytes); }
+        finally { CryptographicOperations.ZeroMemory(bytes); }
+    }
+
+    public bool CanReadToken()
+    {
+        if (UnprotectToken() is not { } bytes) return false;
+        CryptographicOperations.ZeroMemory(bytes);
+        return true;
+    }
+
+    private byte[]? UnprotectToken()
+    {
+        if (Token is null) return null;
         try
         {
-            var bytes = ProtectedData.Unprotect(Token, null, DataProtectionScope.CurrentUser);
-            try { return Encoding.UTF8.GetString(bytes); }
-            finally { CryptographicOperations.ZeroMemory(bytes); }
+            return ProtectedData.Unprotect(Token, null, DataProtectionScope.CurrentUser);
         }
-        catch (CryptographicException)
-        {
-            throw new InvalidOperationException(Strings.Get("SavedTokenUnavailable"));
-        }
+        catch (CryptographicException) { return null; }
     }
 }
 
@@ -52,6 +62,7 @@ internal sealed class ProjectFile(string directory, FileStream folderLock) : IDi
     public ProjectStatus Status => manifest.Status;
     public string? Name => string.IsNullOrWhiteSpace(manifest.Name) ? null : manifest.Name;
     public CopySettings? Settings => manifest.Settings;
+    public bool HasUsableToken { get; private set; }
     public ArchiveProgress? Archive { get; private set; }
     public bool CanResume => Status == ProjectStatus.Copying;
 
@@ -103,12 +114,15 @@ internal sealed class ProjectFile(string directory, FileStream folderLock) : IDi
                     project.manifest = JsonSerializer.Deserialize<Manifest>(file, JsonOptions)
                         ?? throw new InvalidDataException(Strings.Get("EmptyProjectFile"));
                     project.Validate();
+                    project.HasUsableToken = project.Settings?.CanReadToken() == true;
                 }
 
                 project.Archive = SnapshotImporter.InspectProgress(directory);
                 if (!hasManifest && project.Archive is null)
                     throw new InvalidDataException(Strings.Get("ProjectSnapshotMissing"));
                 if (project.Status == ProjectStatus.Copying && project.Settings is null && project.Archive is null)
+                    throw new InvalidDataException(Strings.Get("CopySettingsMissing"));
+                if (project.Settings is { Channels.Length: 0 } && (project.Archive is null || !project.IsCurrentCopy(project.Archive)))
                     throw new InvalidDataException(Strings.Get("CopySettingsMissing"));
                 if (project.Status == ProjectStatus.Completed && project.Archive is not { Incomplete: false })
                     throw new InvalidDataException(Strings.Get("CompletedProjectInvalid"));
@@ -140,7 +154,7 @@ internal sealed class ProjectFile(string directory, FileStream folderLock) : IDi
         if (Status == ProjectStatus.Copying)
         {
             if (Settings is null) return; // A CLI snapshot can be named before GUI copy settings have been created.
-            if (Settings is not { Server.Id.Length: > 0, Channels.Length: > 0, ApiInterval: >= 30, CdnInterval: >= 0 } ||
+            if (Settings is not { Server.Id.Length: > 0, Channels: not null, ApiInterval: >= 30, CdnInterval: >= 0 } ||
                 Settings.Token is { Length: 0 } ||
                 Settings.Channels.Any(channel => string.IsNullOrEmpty(channel?.Id)) ||
                 !Guid.TryParseExact(Settings.OperationId, "N", out _))
@@ -184,6 +198,7 @@ internal sealed class ProjectFile(string directory, FileStream folderLock) : IDi
             }
             File.Move(temporary, ManifestPath, overwrite: true);
             manifest = next;
+            HasUsableToken = next.Settings?.CanReadToken() == true;
         }
         finally { File.Delete(temporary); }
     }

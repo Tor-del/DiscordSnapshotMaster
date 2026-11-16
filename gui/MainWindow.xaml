@@ -286,6 +286,8 @@
                         Visibility="Collapsed" Margin="0,0,8,0" />
                 <Button x:Name="MarkCopiedButton" Content="{DynamicResource UiMarkCopied}" Click="ResolveChannelCopiesClick"
                         Visibility="Collapsed" Margin="0,0,8,0" />
+                <Button x:Name="SkipFailedFilesButton" Content="{DynamicResource UiSkipFailedFiles}" Click="SkipFailedFilesClick"
+                        Visibility="Collapsed" Margin="0,0,8,0" />
                 <Button x:Name="SshSaveButton" Click="SshSaveClick" Style="{StaticResource IconButton}"
                         ToolTip="{DynamicResource UiSshSave}" AutomationProperties.Name="{DynamicResource UiSshSave}"
                         Margin="0,0,8,0" Visibility="Collapsed">

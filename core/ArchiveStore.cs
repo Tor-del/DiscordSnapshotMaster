@@ -43,10 +43,7 @@ internal sealed class ArchiveStore : IDisposable
         """;
     private const string ChannelColumns = "SELECT id, parent_id, name, type, selected, cursor, copied_through FROM channels";
     private const string AssetColumns = "SELECT id, kind, url, path, expected_bytes, channel_id, message_id, sha256, error FROM assets";
-    private const string HasGaps = """
-        SELECT EXISTS(SELECT 1 FROM channels WHERE history_done = 0 OR discovery_done = 0)
-            OR EXISTS(SELECT 1 FROM assets WHERE sha256 IS NULL)
-        """;
+    private const string HasHistoryGaps = "SELECT EXISTS(SELECT 1 FROM channels WHERE history_done = 0 OR discovery_done = 0)";
     private const string HasPendingCopy = "SELECT EXISTS(SELECT 1 FROM channels WHERE pending_copy = 1)";
     private readonly Sqlite db;
 
@@ -73,6 +70,20 @@ internal sealed class ArchiveStore : IDisposable
     public string DirectoryPath { get; }
 
     private static long ReadVersion(Sqlite database) => database.Query("PRAGMA user_version", row => row.Number(0)).Single();
+
+    private static bool HasSkippedAssets(Sqlite database) => database.Query(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'skipped_assets'", _ => true).Any();
+
+    private static string PendingAssetFilter(Sqlite database) => HasSkippedAssets(database)
+        ? "sha256 IS NULL AND id NOT IN (SELECT asset_id FROM skipped_assets)" : "sha256 IS NULL";
+
+    private static bool HasGaps(Sqlite database) => database.Query(HasHistoryGaps, row => row.Flag(0)).Single() ||
+        database.Query($"SELECT EXISTS(SELECT 1 FROM assets WHERE {PendingAssetFilter(database)})", row => row.Flag(0)).Single();
+
+    private static int CountSkippedFiles(Sqlite database) => HasSkippedAssets(database)
+        ? database.Query("SELECT count(*) FROM skipped_assets", row => (int)row.Number(0)).Single() : 0;
+
+    public int SkippedFiles => CountSkippedFiles(db);
 
     public static ArchiveProgress? InspectProgress(string directory)
     {
@@ -104,9 +115,15 @@ internal sealed class ArchiveStore : IDisposable
         }).ToArray();
         var dates = roots.Where(root => root.CopiedAt is not null).ToDictionary(root => root.Choice.Id,
             root => DateTimeOffset.Parse(root.CopiedAt!, System.Globalization.CultureInfo.InvariantCulture));
-        var incomplete = database.Query(HasPendingCopy, row => row.Flag(0)).Single() || database.Query(HasGaps, row => row.Flag(0)).Single();
+        var incomplete = database.Query(HasPendingCopy, row => row.Flag(0)).Single() || HasGaps(database);
+        var failedFiles = database.Query($"SELECT count(*) FROM assets WHERE {PendingAssetFilter(database)} AND error IS NOT NULL",
+            row => (int)row.Number(0)).Single();
         return new ArchiveProgress(server, roots.Select(root => root.Choice).ToArray(), incomplete, operationId, dates,
-            roots.Where(root => root.Pending).Select(root => root.Choice.Id).ToHashSet());
+            roots.Where(root => root.Pending).Select(root => root.Choice.Id).ToHashSet())
+        {
+            FailedFiles = failedFiles,
+            SkippedFiles = CountSkippedFiles(database),
+        };
     }
 
     public (string GuildId, string Cutoff, string StartedAt) Snapshot => db.Query(
@@ -133,7 +150,7 @@ internal sealed class ArchiveStore : IDisposable
         var cutoff = Snowflake.Cutoff(now);
         db.Transaction(() =>
         {
-            if (db.Query(HasPendingCopy, row => row.Flag(0)).Single() || db.Query(HasGaps, row => row.Flag(0)).Single())
+            if (db.Query(HasPendingCopy, row => row.Flag(0)).Single() || HasGaps(db))
                 throw new InvalidOperationException(Strings.Get("FinishCopyBeforeAdding"));
             db.Execute("UPDATE snapshot SET cutoff = ?, copy_id = ? WHERE id = 1", cutoff, operationId);
             SaveSelection(selection, channels, cutoff);
@@ -172,7 +189,7 @@ internal sealed class ArchiveStore : IDisposable
 
     public void FinishCopy(string cutoff)
     {
-        if (db.Query(HasGaps, row => row.Flag(0)).Single()) return;
+        if (HasGaps(db)) return;
         db.Execute("UPDATE channels SET pending_copy = 0, copied_through = ?, copied_at = ? WHERE pending_copy = 1",
             cutoff, DateTimeOffset.UtcNow.ToString("O"));
     }
@@ -199,6 +216,30 @@ internal sealed class ArchiveStore : IDisposable
                     """, note, markComplete, cutoff, markComplete, now, id, id);
             FinishCopy(cutoff);
         });
+    }
+
+    public int SkipFailedFiles(string operationId)
+    {
+        var skipped = 0;
+        db.Transaction(() =>
+        {
+            var currentOperation = db.Query("SELECT copy_id FROM snapshot WHERE id = 1", row => row.Text(0)).Single();
+            if (currentOperation != operationId) throw new InvalidOperationException(Strings.Get("CopySelectionChanged"));
+
+            var filter = PendingAssetFilter(db) + " AND error IS NOT NULL";
+            skipped = db.Query($"SELECT count(*) FROM assets WHERE {filter}", row => (int)row.Number(0)).Single();
+            if (skipped == 0) return;
+
+            // Optional in version 2 so existing archives can be opened without a schema migration.
+            db.Execute("""
+                CREATE TABLE IF NOT EXISTS skipped_assets (
+                  asset_id TEXT NOT NULL PRIMARY KEY REFERENCES assets(id) ON DELETE CASCADE
+                )
+                """);
+            db.Execute($"INSERT INTO skipped_assets SELECT id FROM assets WHERE {filter}");
+            FinishCopy(Snapshot.Cutoff);
+        });
+        return skipped;
     }
 
     private void SaveAsset(MediaAsset entry, string? channelId = null, string? messageId = null) => db.Execute("""
@@ -253,7 +294,8 @@ internal sealed class ArchiveStore : IDisposable
 
     private static StoredAsset ReadAsset(Sqlite.Columns row) => new(new MediaAsset(row.Text(0)!, row.Text(1)!, row.Text(2)!, row.Text(3)!, row.OptionalNumber(4)),
         row.Text(5), row.Text(6), row.Text(7), row.Text(8));
-    public StoredAsset[] PendingAssets(string after) => db.Query($"{AssetColumns} WHERE sha256 IS NULL AND id > ? ORDER BY id LIMIT 100", ReadAsset, after).ToArray();
+    public StoredAsset[] PendingAssets(string after) => db.Query(
+        $"{AssetColumns} WHERE {PendingAssetFilter(db)} AND id > ? ORDER BY id LIMIT 100", ReadAsset, after).ToArray();
     public StoredAsset Asset(string id) => db.Query($"{AssetColumns} WHERE id = ?", ReadAsset, id).Single();
     public void RefreshAsset(MediaAsset asset) => db.Execute("UPDATE assets SET url = ? WHERE id = ?", asset.Url, asset.Id);
     public void AssetSaved(string id, long bytes, string hash) => db.Execute("UPDATE assets SET bytes = ?, sha256 = ?, error = NULL WHERE id = ?", bytes, hash, id);
@@ -278,14 +320,18 @@ internal sealed class ArchiveStore : IDisposable
         var files = db.Query("SELECT count(*), count(sha256), coalesce(sum(bytes), 0) FROM assets",
             row => (Total: row.Number(0), Saved: row.Number(1), Bytes: row.Number(2))).Single();
         log(Strings.Get("FilesReport", files.Saved, files.Total, files.Bytes));
-        foreach (var file in db.Query("SELECT path, kind, channel_id, message_id, error FROM assets WHERE sha256 IS NULL ORDER BY id",
-            row => (Path: row.Text(0), Kind: row.Text(1), Channel: row.Text(2), Message: row.Text(3), Error: row.Text(4))))
+        foreach (var file in db.Query($"""
+            SELECT path, kind, channel_id, message_id, error, NOT ({PendingAssetFilter(db)})
+            FROM assets WHERE sha256 IS NULL ORDER BY id
+            """, row => (Path: row.Text(0), Kind: row.Text(1), Channel: row.Text(2), Message: row.Text(3), Error: row.Text(4), Skipped: row.Flag(5))))
         {
             cancellation.ThrowIfCancellationRequested();
             var location = file.Message is null ? "" : Strings.Get("MessageLocation", file.Message, file.Channel);
-            log($"  {file.Path} · {file.Kind}{location} · {file.Error ?? Strings.Get("PendingDownload")}");
+            var detail = file.Skipped ? Strings.Get("FileSkipped", file.Error!) : file.Error ?? Strings.Get("PendingDownload");
+            log($"  {file.Path} · {file.Kind}{location} · {detail}");
+            incomplete |= !file.Skipped;
         }
-        return incomplete || files.Saved != files.Total || db.Query(HasPendingCopy, row => row.Flag(0)).Single();
+        return incomplete || db.Query(HasPendingCopy, row => row.Flag(0)).Single();
     }
 
     public void VerifyDatabase()

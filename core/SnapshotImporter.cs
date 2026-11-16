@@ -4,9 +4,16 @@ using System.Text.Json;
 namespace DiscordSnapshot;
 
 public sealed record ImportResult(string Directory, bool Incomplete);
-public sealed record ArchiveCheck(bool Incomplete, int DamagedFiles);
+public sealed record ArchiveCheck(bool Incomplete, int DamagedFiles)
+{
+    public int SkippedFiles { get; init; }
+}
 public sealed record ArchiveProgress(DiscordServer Server, ChannelChoice[] Channels, bool Incomplete, string OperationId,
-    IReadOnlyDictionary<string, DateTimeOffset> CopiedAt, IReadOnlySet<string> PendingChannelIds);
+    IReadOnlyDictionary<string, DateTimeOffset> CopiedAt, IReadOnlySet<string> PendingChannelIds)
+{
+    public int FailedFiles { get; init; }
+    public int SkippedFiles { get; init; }
+}
 
 public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, CancellationToken, Task>? publishMedia = null)
 {
@@ -46,6 +53,12 @@ public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, Ca
     {
         using var archive = new ArchiveStore(directory);
         archive.ResolveChannelCopies(operationId, channelIds, markComplete);
+    }
+
+    public static int SkipFailedFiles(string directory, string operationId)
+    {
+        using var archive = new ArchiveStore(directory);
+        return archive.SkipFailedFiles(operationId);
     }
 
     public static void EnsureViewerCompose(string directory)
@@ -139,7 +152,7 @@ public sealed class SnapshotImporter(HttpClient? cdnHttp = null, Func<string, Ca
         archive.VerifyDatabase();
         var incomplete = archive.WriteReport(log, cancellation);
         var damaged = await archive.VerifyFilesAsync(log, cancellation).ConfigureAwait(false);
-        return new ArchiveCheck(incomplete, damaged);
+        return new ArchiveCheck(incomplete, damaged) { SkippedFiles = archive.SkippedFiles };
     }
 
     private async Task ImportAsync(ArchiveStore archive, DiscordClient api, Dictionary<string, ulong> permissions,

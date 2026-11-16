@@ -45,6 +45,8 @@ try
     var progress = SnapshotImporter.InspectProgress(directory);
     Expect(progress is { Incomplete: true, Server.Id: "1" } && progress.Channels.Single().Id == "30",
         "проект восстанавливает исходный выбор и состояние архива");
+    Expect(progress!.FailedFiles == 0 && SnapshotImporter.SkipFailedFiles(directory, progress.OperationId) == 0,
+        "пропуск не затрагивает файлы, для которых ещё нет ошибки загрузки");
 
     log.Clear();
     File.Delete(compose);
@@ -160,6 +162,29 @@ try
     var retried = await importer.CopyChannelsAsync(client, reviewDirectory, ["30"], Guid.NewGuid().ToString("N"), 0, log.Add, timeout.Token);
     Expect(!retried.Incomplete && log.Any(line => line.Contains("русский канал [30] · 2 messages")),
         "пропущенный канал можно скопировать снова без потери сообщений");
+
+    var missingMediaDirectory = Path.Combine(root, "Недоступное вложение");
+    var missingMediaId = Guid.NewGuid().ToString("N");
+    server.AttachmentUnavailable = true;
+    var missingMedia = await importer.StartInDirectoryAsync(client, "1", ["30"], missingMediaDirectory, 0, _ => { },
+        timeout.Token, operationId: missingMediaId);
+    Expect(missingMedia.Incomplete && SnapshotImporter.InspectProgress(missingMediaDirectory) is { FailedFiles: 1 },
+        "недоступное вложение остаётся в очереди и доступно для пропуска");
+    var attachmentRequests = server.AttachmentRequests;
+    Expect(SnapshotImporter.SkipFailedFiles(missingMediaDirectory, missingMediaId) == 1 &&
+        SnapshotImporter.SkipFailedFiles(missingMediaDirectory, missingMediaId) == 0,
+        "пропуск учитывает только ошибочные файлы и безопасен при повторе");
+    Expect(SnapshotImporter.InspectProgress(missingMediaDirectory) is { Incomplete: false, FailedFiles: 0 } ready && ready.CopiedAt.ContainsKey("30"),
+        "отсутствующее вложение больше не блокирует завершение копирования");
+    log.Clear();
+    var skippedCheck = await SnapshotImporter.CheckAsync(missingMediaDirectory, log.Add, timeout.Token);
+    Expect(skippedCheck is { Incomplete: false, DamagedFiles: 0, SkippedFiles: 1 } &&
+        log.Any(line => line.Contains("Skipped by user") && line.Contains("HTTP 404")) &&
+        log.Any(line => line.Contains("русский канал [30] · 2 messages")),
+        "проверка архива сохраняет историю и показывает исходную ошибку пропущенного файла");
+    var missingMediaResume = await importer.ResumeAsync(client, missingMediaDirectory, 0, _ => { }, _ => { }, timeout.Token);
+    Expect(!missingMediaResume.Incomplete && server.AttachmentRequests == attachmentRequests,
+        "при повторном открытии пропущенный файл не отправляется на загрузку");
     Console.WriteLine("Проверки прошли. Права, лимиты, ветки, остановка, возобновление, пропуск, ручное завершение, докопирование, обновление, вложения и SQLite.");
 }
 finally { Directory.Delete(root, recursive: true); }
@@ -198,6 +223,8 @@ internal sealed class FakeDiscord : HttpMessageHandler
     public bool ExposeThirdChannel { get; set; }
     public string? NewRootMessageId { get; set; }
     public bool RefreshedAttachment { get; private set; }
+    public bool AttachmentUnavailable { get; set; }
+    public int AttachmentRequests { get; private set; }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellation)
     {
@@ -205,6 +232,11 @@ internal sealed class FakeDiscord : HttpMessageHandler
         if (url.Host == "cdn.discordapp.com")
         {
             if (request.Headers.Authorization is not null) throw new InvalidOperationException("Токен передан CDN.");
+            if (url.AbsolutePath.EndsWith("/300/file.txt", StringComparison.Ordinal))
+            {
+                AttachmentRequests++;
+                if (AttachmentUnavailable) return new HttpResponseMessage(HttpStatusCode.NotFound);
+            }
             if (url.Query == "?ex=old")
             {
                 if (++oldFileCalls == 1)

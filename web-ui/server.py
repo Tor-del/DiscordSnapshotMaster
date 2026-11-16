@@ -79,11 +79,15 @@ def project_name(archive):
 
 
 def read_snapshot(db, direct_hidden=(), hidden=(), admin=False):
-    row = db.execute("""
+    has_skipped_assets = db.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'skipped_assets'").fetchone()
+    pending_assets = "sha256 IS NULL"
+    if has_skipped_assets:
+        pending_assets += " AND id NOT IN (SELECT asset_id FROM skipped_assets)"
+    row = db.execute(f"""
         SELECT s.guild_id, s.started_at, s.data,
                (SELECT id FROM assets WHERE id = s.icon_id AND sha256 IS NOT NULL) AS icon,
                EXISTS(SELECT 1 FROM channels WHERE pending_copy = 1 OR history_done = 0 OR discovery_done = 0)
-               OR EXISTS(SELECT 1 FROM assets WHERE sha256 IS NULL) AS incomplete
+               OR EXISTS(SELECT 1 FROM assets WHERE {pending_assets}) AS incomplete
         FROM snapshot s WHERE s.id = 1
     """).fetchone()
     if row is None:
@@ -92,6 +96,7 @@ def read_snapshot(db, direct_hidden=(), hidden=(), admin=False):
         "name": json.loads(row["data"]).get("name") or row["guild_id"],
         "startedAt": row["started_at"], "icon": row["icon"],
         "incomplete": bool(row["incomplete"]),
+        "skippedMedia": bool(has_skipped_assets and db.execute("SELECT 1 FROM skipped_assets LIMIT 1").fetchone()),
         "categories": [dict(item) for item in db.execute("SELECT id, name FROM categories ORDER BY json_extract(data, '$.position'), id")],
         "channels": [dict(item, **({"hidden": item["id"] in hidden, "hiddenDirectly": item["id"] in direct_hidden} if admin else {})) for item in db.execute("""
             SELECT id, parent_id, name, type FROM channels

@@ -1,7 +1,7 @@
 param(
     [string]$Compiler = 'ISCC.exe',
     [ValidatePattern('^\d+\.\d+\.\d+(\.\d+)?$')]
-    [string]$Version = '1.2.5',
+    [string]$Version = '1.2.6',
     [string]$PythonArchive
 )
 

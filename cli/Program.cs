@@ -61,7 +61,8 @@ static async Task<int> RunAsync(string[] arguments, CancellationToken cancellati
     if (status is not null)
     {
         var check = await SnapshotImporter.CheckAsync(status, Log, cancellation);
-        Log(check.DamagedFiles == 0 ? Strings.Get("ArchivePassed") : Strings.Get("DamagedFileCount", check.DamagedFiles));
+        Log(check.DamagedFiles > 0 ? Strings.Get("DamagedFileCount", check.DamagedFiles)
+            : check.SkippedFiles > 0 ? Strings.Get("ArchivePassedWithSkippedFiles", check.SkippedFiles) : Strings.Get("ArchivePassed"));
         return check.Incomplete || check.DamagedFiles != 0 ? 2 : 0;
     }
     if (Console.IsInputRedirected) throw new InvalidOperationException(Strings.Get("CliInteractiveRequired"));

@@ -65,7 +65,7 @@ public partial class MainWindow : Window
         StatusText.Text = project.Status switch
         {
             ProjectStatus.Completed => Strings.Get("ConnectToAddChannels"),
-            ProjectStatus.Copying when settings?.Token is null => Strings.Get("EnterTokenToResume"),
+            ProjectStatus.Copying when !project.HasUsableToken => Strings.Get(settings?.Token is null ? "EnterTokenToResume" : "SavedTokenUnavailable"),
             ProjectStatus.Copying => Strings.Get("ClickResume"),
             _ => Strings.Get("EnterTokenToLoadServers"),
         };
@@ -145,7 +145,7 @@ public partial class MainWindow : Window
             connected ? Visibility.Collapsed : Visibility.Visible;
         using var password = TokenBox.SecurePassword;
         ConnectButton.Visibility = connected ? Visibility.Collapsed : Visibility.Visible;
-        ConnectButton.IsEnabled = configuring && !connected && password.Length > 0;
+        ConnectButton.IsEnabled = !Busy && !connected && password.Length > 0;
         DisconnectButton.Visibility = connected ? Visibility.Visible : Visibility.Collapsed;
         DisconnectButton.IsEnabled = !Busy && connected;
         Servers.IsEnabled = configuring && project.Status == ProjectStatus.New && connected;
@@ -160,10 +160,13 @@ public partial class MainWindow : Window
         MarkCopiedButton.Visibility = project.Archive is { } progress && project.IsCurrentCopy(progress)
             ? SkipCopyButton.Visibility : Visibility.Collapsed;
         SkipCopyButton.IsEnabled = MarkCopiedButton.IsEnabled = !Busy && selected > 0;
+        SkipFailedFilesButton.Visibility = project.CanResume && project.Archive is { FailedFiles: > 0 } failed && project.IsCurrentCopy(failed)
+            ? Visibility.Visible : Visibility.Collapsed;
+        SkipFailedFilesButton.IsEnabled = !Busy;
         CopyButton.Content = copying ? Strings.Get("Pause") : project.CanResume ? Strings.Get("Resume")
             : Strings.Get(project.Status == ProjectStatus.Completed ? "UiSyncChannels" : "UiStart");
         CopyButton.IsEnabled = copying ? operation is { IsCancellationRequested: false }
-            : project.CanResume ? !Busy && (project.Settings?.Token is not null || password.Length > 0)
+            : project.CanResume ? !Busy && (project.HasUsableToken || connected || password.Length > 0)
             : configuring && discord is not null && Servers.SelectedItem is DiscordServer && selected > 0;
         CheckButton.IsEnabled = CanCheckArchive;
         SshSaveButton.IsEnabled = !Busy;
@@ -179,6 +182,7 @@ public partial class MainWindow : Window
         {
             ProjectStatus.New => Strings.Get("NewProject"),
             ProjectStatus.Copying => Strings.Get("CopyIncomplete"),
+            ProjectStatus.Completed when project.Archive is { SkippedFiles: > 0 } finished => Strings.Get("CopyFinishedWithSkippedFiles", finished.SkippedFiles),
             ProjectStatus.Completed => Strings.Get("CopyComplete"),
             _ => "",
         };
@@ -288,17 +292,20 @@ public partial class MainWindow : Window
 
     private async void ConnectClick(object sender, RoutedEventArgs e)
     {
-        if (Busy || discord is not null || project.CanResume || !ReadIntervals(out var apiInterval, out _)) return;
+        if (Busy || discord is not null || !ReadIntervals(out var apiInterval, out var cdnInterval)) return;
         var token = TokenBox.Password.Trim();
         if (token.Length == 0) return;
-        var archiveServer = project.Archive?.Server;
-        ResetConnection();
+        var resuming = project.CanResume;
+        var archiveServer = (resuming ? project.Settings?.Server : null) ?? project.Archive?.Server;
+        if (!resuming) ResetConnection();
         await RunAsync(Strings.Get(archiveServer is null ? "LoadingServers" : "LoadingChannels"), async cancellation =>
         {
             var client = new DiscordClient(token) { IntervalMs = apiInterval };
             var response = await client.ConnectAsync(cancellation);
             var channels = archiveServer is null ? null : await client.LoadChannelsAsync(archiveServer.Id, cancellation);
-            return (Client: client, Response: response, Token: CopySettings.ProtectToken(token), Channels: channels);
+            var protectedToken = CopySettings.ProtectToken(token);
+            if (resuming) project.SaveSettings(ResumeSettings(project.Archive, apiInterval, cdnInterval) with { Token = protectedToken });
+            return (Client: client, Response: response, Token: protectedToken, Channels: channels);
         }, result =>
         {
             discord = result.Client;
@@ -308,6 +315,7 @@ public partial class MainWindow : Window
             if (result.Channels is not null)
             {
                 availableChannels = result.Channels.ToArray();
+                if (resuming) return Strings.Get("ClickResume");
                 SetChannelRows();
                 return Strings.Get(channelRows.Any(row => row.CanSelect) ? "SelectChannelsToSync" : "NoChannelHistory");
             }
@@ -412,6 +420,27 @@ public partial class MainWindow : Window
         RefreshControls();
     }
 
+    private async void SkipFailedFilesClick(object sender, RoutedEventArgs e)
+    {
+        if (Busy || !project.CanResume || project.Archive is not { FailedFiles: > 0 } progress || !project.IsCurrentCopy(progress)) return;
+        var title = Strings.Get("UiSkipFailedFiles");
+        if (MessageBox.Show(this, Strings.Get("ConfirmSkipFailedFiles", progress.FailedFiles), title,
+                MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+
+        StopViewer();
+        await RunAsync(title, async cancellation =>
+        {
+            cancellation.ThrowIfCancellationRequested();
+            var count = SnapshotImporter.SkipFailedFiles(project.DirectoryPath, progress.OperationId);
+            project.RefreshArchive();
+            var complete = project.Archive is { Incomplete: false };
+            if (complete) project.Complete();
+            return await SyncCopyChangesAsync(Strings.Get(complete ? "CopyFinishedWithSkippedFiles" : "SkippedFilesWithPendingCopy", count), cancellation);
+        }, message => message);
+        SetChannelRows();
+        RefreshControls();
+    }
+
     private async Task StartCopyAsync()
     {
         if (Busy || discord is not { } client ||
@@ -434,6 +463,7 @@ public partial class MainWindow : Window
     {
         if (Busy || !ReadIntervals(out var apiInterval, out var cdnInterval)) return;
         var replacement = TokenBox.Password.Trim();
+        var connectedClient = discord;
         await RunCopyAsync(Strings.Get("ResumingCopy"), async cancellation =>
         {
             var progress = SnapshotImporter.InspectProgress(project.DirectoryPath);
@@ -441,22 +471,28 @@ public partial class MainWindow : Window
             var copyStarted = progress is not null && project.IsCurrentCopy(progress);
             if (progress is { Incomplete: false } && copyStarted) return new ImportResult(project.DirectoryPath, false);
 
-            var previous = project.Settings;
-            var server = previous?.Server ?? progress?.Server ?? throw new InvalidDataException(Strings.Get("MissingProjectServer"));
-            var channels = previous?.Channels ?? progress!.Channels;
-            var token = replacement.Length > 0 ? replacement : previous?.ReadToken()
-                ?? throw new InvalidOperationException(Strings.Get("EnterBotToken"));
-            var client = new DiscordClient(token) { IntervalMs = apiInterval };
-            await client.ConnectAsync(cancellation);
-            var protectedToken = replacement.Length > 0 ? CopySettings.ProtectToken(token) : previous!.Token;
-            var settings = new CopySettings(server, channels, apiInterval, cdnInterval, protectedToken,
-                previous?.OperationId ?? progress!.OperationId);
+            var settings = ResumeSettings(progress, apiInterval, cdnInterval);
+            var client = connectedClient;
+            if (client is null)
+            {
+                var token = replacement.Length > 0 ? replacement : settings.ReadToken()
+                    ?? throw new InvalidOperationException(Strings.Get("EnterBotToken"));
+                client = new DiscordClient(token) { IntervalMs = apiInterval };
+                await client.ConnectAsync(cancellation);
+                if (replacement.Length > 0) settings = settings with { Token = CopySettings.ProtectToken(token) };
+            }
+            client.IntervalMs = apiInterval;
             project.SaveSettings(settings);
             if (progress is null) return await ImportNewArchiveAsync(client, settings, cancellation);
             if (!copyStarted) return await CopyChannelsAsync(client, settings, cancellation);
             return await importer.ResumeAsync(client, project.DirectoryPath, cdnInterval, ReportLog, _ => { }, cancellation);
         });
     }
+
+    private CopySettings ResumeSettings(ArchiveProgress? progress, int apiInterval, int cdnInterval) =>
+        project.Settings is { } settings ? settings with { ApiInterval = apiInterval, CdnInterval = cdnInterval }
+        : progress is { } archive ? new CopySettings(archive.Server, archive.Channels, apiInterval, cdnInterval, null, archive.OperationId)
+        : throw new InvalidDataException(Strings.Get("MissingProjectServer"));
 
     private void MarkArchiveReady() => Dispatcher.Invoke(() => archiveReady = true);
 
@@ -510,7 +546,8 @@ public partial class MainWindow : Window
         }, result =>
         {
             if (result.DamagedFiles > 0) return Strings.Get("DamagedFileCount", result.DamagedFiles);
-            return result.Incomplete ? Strings.Get("FilesIntactWithGaps") : Strings.Get("ArchivePassed");
+            if (result.Incomplete) return Strings.Get("FilesIntactWithGaps");
+            return result.SkippedFiles > 0 ? Strings.Get("ArchivePassedWithSkippedFiles", result.SkippedFiles) : Strings.Get("ArchivePassed");
         });
     }
 

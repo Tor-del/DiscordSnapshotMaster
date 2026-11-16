@@ -33,6 +33,7 @@ const translations = {
     selectThread: "Select a thread from the channel list.",
     noThreads: "This channel has no archived threads.",
     incompleteSnapshot: "Incomplete snapshot",
+    snapshotWithSkippedMedia: "Snapshot complete with skipped files",
     completeSnapshot: "Complete snapshot",
     noChannels: "The archive has no channels.",
     archiveLoadFailed: "Could not open the archive.",
@@ -85,6 +86,7 @@ const translations = {
     selectThread: "Выберите ветку в списке каналов.",
     noThreads: "В архиве этого канала нет веток.",
     incompleteSnapshot: "Неполный снимок",
+    snapshotWithSkippedMedia: "Снимок готов, часть файлов пропущена",
     completeSnapshot: "Полный снимок",
     noChannels: "В архиве нет каналов.",
     archiveLoadFailed: "Не удалось открыть архив.",
@@ -514,7 +516,8 @@ async function loadArchive() {
     const icon = byId("server-icon");
     icon.textContent = data.name.trim().split(/\s+/).slice(0, 2).map(word => Array.from(word)[0]).join("").toLocaleUpperCase() || "AS";
     avatar(icon, data.icon);
-    byId("snapshot-status").textContent = data.incomplete ? translate("incompleteSnapshot") : translate("completeSnapshot");
+    byId("snapshot-status").textContent = translate(data.incomplete ? "incompleteSnapshot"
+      : data.skippedMedia ? "snapshotWithSkippedMedia" : "completeSnapshot");
     const date = byId("snapshot-date");
     date.dateTime = data.startedAt;
     date.textContent = snapshotFormat.format(new Date(data.startedAt));
