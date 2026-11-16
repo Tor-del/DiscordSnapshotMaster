@@ -18,7 +18,7 @@ The installer appears in `dist/`. Use `-Compiler` to specify the path to `ISCC.e
 
 1. Add a bot to the server and grant it `View Channel` and `Read Message History` for the channels you want to archive. Voice channel chat also requires `Connect`. To include all private threads in a text channel, grant `Manage Threads`.
 2. Enable **Message Content Intent** on the application's **Bot** tab. Verified apps may need approval from Discord. [Discord Developer Portal](https://discord.com/developers/applications)
-3. Open **APEX DSM**, choose **Create or Open**, and select a project folder. You can reopen projects from **Recent Projects**, remove a single entry with its × button, or clear the list.
+3. Open **APEX DSM**, choose **Create or Open**, and select a project folder. When creating a project, enter its display name. Use the pencil next to the project name to rename it. **Recent Projects** shows each name and location. You can reopen a project from the list, remove a single entry with its × button, or clear the list.
 4. Enter the bot token, use the plug icon to connect, then select your server and channels. Choose **Start** and review the channel list before confirming. Filtering the list keeps the selections already made.
 5. Use **Pause** and **Resume** to stop and continue an import, including after reopening the project. Reopen a completed project to add channels or fetch new messages and threads since the previous snapshot.
 
@@ -48,7 +48,7 @@ Use **Users** and **Guilds** to grant access by Discord user ID or server member
 
 ### Projects over SSH
 
-Choose **Over SSH…** in the project picker. Enter the host, user, port, and absolute path, such as `/srv/discord/archive`. Windows OpenSSH uses the keys from your SSH configuration or agent. Verify the server's host key and add it to `known_hosts` before connecting.
+Choose **Over SSH…** in the project picker. Enter the host, user, port, and absolute path, such as `/srv/discord/archive`. You can also enter a display name to use if the app creates a project. Windows OpenSSH uses the keys from your SSH configuration or agent. Load passphrase-protected keys into `ssh-agent` first and add the verified server key to `known_hosts` before connecting.
 
 The app works on a local copy of the database and uploads new attachments individually. Saving authorization settings synchronizes those settings immediately. **Synchronize**, import completion, and closing the project synchronize other changed files. The app checks for remote changes before replacing files through SFTP and keeps the working copy if it detects a conflict. Coordinate SSH updates with changes made in the web viewer when both can write to the same archive.
 

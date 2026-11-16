@@ -10,11 +10,6 @@
         <Style x:Key="AuthorizationField" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource Secondary}" />
         </Style>
-        <Style x:Key="AuthorizationInput" TargetType="Control">
-            <Setter Property="Height" Value="34" />
-            <Setter Property="Padding" Value="8,0" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
     </Window.Resources>
     <DockPanel Margin="24,16,24,18">
         <TextBlock DockPanel.Dock="Top" Text="{DynamicResource UiAuthorizationSettings}"
@@ -39,13 +34,13 @@
                         </TextBlock>
                         <TextBlock Text="Client ID" Style="{StaticResource AuthorizationField}" />
                         <TextBox x:Name="ClientId" AutomationProperties.Name="Client ID" MaxLength="20" Margin="0,4,0,12"
-                                 Style="{StaticResource AuthorizationInput}" />
+                                 Style="{StaticResource DialogInput}" />
                         <TextBlock Text="Client Secret" Style="{StaticResource AuthorizationField}" />
                         <PasswordBox x:Name="ClientSecret" AutomationProperties.Name="Client Secret" MaxLength="256" Margin="0,4,0,12"
-                                     Style="{StaticResource AuthorizationInput}" />
+                                     Style="{StaticResource DialogInput}" />
                         <TextBlock Text="Discord Redirect URI" Style="{StaticResource AuthorizationField}" />
                         <TextBox x:Name="RedirectUri" AutomationProperties.Name="Discord Redirect URI" MaxLength="1024" Margin="0,4,0,0"
-                                 Style="{StaticResource AuthorizationInput}" />
+                                 Style="{StaticResource DialogInput}" />
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -72,7 +67,7 @@
                                                 </Grid.ColumnDefinitions>
                                                 <TextBox x:Name="UserIdInput" Text="{Binding Id, UpdateSourceTrigger=PropertyChanged}"
                                                          AutomationProperties.Name="Discord ID" ToolTip="Discord ID" MaxLength="20"
-                                                         Style="{StaticResource AuthorizationInput}" />
+                                                         Style="{StaticResource DialogInput}" />
                                                 <CheckBox Grid.Column="1" IsChecked="{Binding Admin}" VerticalAlignment="Center"
                                                           Margin="12,0" Content="{DynamicResource UiArchiveAdmin}" />
                                                 <Button Grid.Column="2" Click="RemoveUserClick" MinHeight="34" Padding="8,4"
@@ -103,7 +98,8 @@
             <TabItem Header="{DynamicResource UiAuthorizationGuilds}">
                 <DockPanel Margin="14">
                     <TextBlock DockPanel.Dock="Top" Text="{DynamicResource UiAuthorizationGuildsHint}" Style="{StaticResource AuthorizationField}" TextWrapping="Wrap" Margin="0,0,0,10" />
-                    <TextBox x:Name="Guilds" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8"
+                    <TextBox x:Name="Guilds" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch"
+                             Style="{StaticResource DialogInput}"
                              AutomationProperties.Name="{DynamicResource UiAuthorizationGuilds}" />
                 </DockPanel>
             </TabItem>

@@ -5,6 +5,7 @@ namespace DiscordSnapshot.Gui;
 public partial class SshConnection : Window
 {
     internal SshAddress? Address { get; private set; }
+    internal string? NewProjectName { get; private set; }
 
     public SshConnection() => InitializeComponent();
 
@@ -19,6 +20,8 @@ public partial class SshConnection : Window
             ErrorText.Text = Strings.Get("SshInvalidAddress");
             return;
         }
+        var name = NameInput.Text.Trim();
+        NewProjectName = name.Length > 0 ? name : null;
         DialogResult = true;
     }
 }

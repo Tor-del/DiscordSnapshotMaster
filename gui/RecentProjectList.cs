@@ -5,6 +5,8 @@ namespace DiscordSnapshot.Gui;
 
 internal static class RecentProjectList
 {
+    internal sealed record Entry(string Path, string? Name = null);
+
     private const int Limit = 10;
     private static string ComparisonKey(string path) =>
         path.StartsWith("ssh://", StringComparison.OrdinalIgnoreCase) ? path : path.ToUpperInvariant();
@@ -17,13 +19,23 @@ internal static class RecentProjectList
         catch (DirectoryNotFoundException) { }
     }
 
-    public static string[] Read()
+    public static Entry[] Read()
     {
         try
         {
             using var file = File.OpenRead(ListPath);
-            return JsonSerializer.Deserialize<string[]>(file)?
-                .Where(path => !string.IsNullOrWhiteSpace(path)).DistinctBy(ComparisonKey).Take(Limit).ToArray() ?? [];
+            using var document = JsonDocument.Parse(file);
+            if (document.RootElement.ValueKind != JsonValueKind.Array) return [];
+            return document.RootElement.EnumerateArray()
+                .Select(item => item.ValueKind switch
+                {
+                    JsonValueKind.String => new Entry(item.GetString()!),
+                    JsonValueKind.Object => item.Deserialize<Entry>(),
+                    _ => null,
+                })
+                .OfType<Entry>()
+                .Where(item => !string.IsNullOrWhiteSpace(item.Path))
+                .DistinctBy(item => ComparisonKey(item.Path)).Take(Limit).ToArray();
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException)
         {
@@ -31,12 +43,12 @@ internal static class RecentProjectList
         }
     }
 
-    public static void Remember(string path)
+    public static void Remember(string path, string? name)
     {
         try
         {
             var key = ComparisonKey(path);
-            Write(Read().Where(previous => ComparisonKey(previous) != key).Prepend(path).Take(Limit).ToArray());
+            Write(Read().Where(previous => ComparisonKey(previous.Path) != key).Prepend(new Entry(path, name)).Take(Limit).ToArray());
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException)
         {
@@ -48,11 +60,11 @@ internal static class RecentProjectList
     {
         var key = ComparisonKey(path);
         var paths = Read();
-        var remaining = paths.Where(previous => ComparisonKey(previous) != key).ToArray();
+        var remaining = paths.Where(previous => ComparisonKey(previous.Path) != key).ToArray();
         if (remaining.Length != paths.Length) Write(remaining);
     }
 
-    private static void Write(string[] paths)
+    private static void Write(Entry[] paths)
     {
         var temporary = ListPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try

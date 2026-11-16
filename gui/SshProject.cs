@@ -10,6 +10,7 @@ internal sealed record SshAddress(string Host, string User, int Port, string Pat
 {
     public override string ToString() => $"ssh://{User}@{Host}:{Port}{Path}";
     public string HistoryKey => new UriBuilder("ssh", Host, Port, Path.Replace("%", "%25")) { UserName = User }.Uri.AbsoluteUri;
+    public string ProjectFolderName => Path[(Path.LastIndexOf('/') + 1)..];
 
     public static SshAddress? Create(string host, string user, int port, string path)
     {
@@ -31,17 +32,20 @@ internal sealed record SshAddress(string Host, string User, int Port, string Pat
 internal sealed class SshProject(SshAddress address, string directory)
 {
     private const string Database = "snapshot.sqlite";
+    private const string Manifest = "project.json";
     private const string AuthFile = ArchiveAuthorization.FileName;
     private static readonly string Cache = Path.GetFullPath(Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord Snapshot", "SSH"));
     private static readonly string[] AuthorizationFiles = [AuthFile, AuthFile + ".disabled"];
-    private static readonly string[] ProjectFiles = ["project.json", Database, "compose.yml", .. AuthorizationFiles];
+    private static readonly string[] ProjectFiles = [Manifest, Database, "compose.yml", .. AuthorizationFiles];
     private static readonly Regex MediaName = new(@"\A[a-f0-9]{64}(\.[a-z0-9]{1,8})?\z");
     private readonly Dictionary<string, string> lastSaved = new(StringComparer.Ordinal);
     private readonly string transferId = Guid.NewGuid().ToString("N");
     private bool mediaDirectoryReady;
     public string DirectoryPath => directory;
     public string RemotePath => address.ToString();
+    public string HistoryKey => address.HistoryKey;
+    public string ProjectFolderName => address.ProjectFolderName;
 
     public static async Task<SshProject> DownloadAsync(SshAddress address, bool createIfMissing, CancellationToken cancellation)
     {
@@ -116,6 +120,8 @@ internal sealed class SshProject(SshAddress address, string directory)
     public Task SaveAsync(CancellationToken cancellation) => SaveFilesAsync(ProjectFiles, cancellation);
 
     public Task SaveAuthorizationAsync(CancellationToken cancellation) => SaveFilesAsync(AuthorizationFiles, cancellation);
+
+    public Task SaveProjectNameAsync(CancellationToken cancellation) => SaveFilesAsync([Manifest], cancellation);
 
     private async Task SaveFilesAsync(string[] files, CancellationToken cancellation)
     {

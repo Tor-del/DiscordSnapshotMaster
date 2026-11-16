@@ -7,7 +7,7 @@ namespace DiscordSnapshot.Gui;
 
 public partial class ProjectPicker : Window
 {
-    private sealed record RecentProject(string Key, string Label);
+    private sealed record RecentProject(string Key, string Name, string Location);
 
     public ProjectPicker()
     {
@@ -25,10 +25,16 @@ public partial class ProjectPicker : Window
 
     private void RefreshRecentProjects()
     {
-        var paths = RecentProjectList.Read();
-        RecentProjects.ItemsSource = paths.Select(path => new RecentProject(path, SshAddress.Parse(path)?.ToString() ?? path));
-        EmptyText.Visibility = paths.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
-        ClearHistoryButton.IsEnabled = paths.Length > 0;
+        var entries = RecentProjectList.Read();
+        RecentProjects.ItemsSource = entries.Select(entry =>
+        {
+            var address = SshAddress.Parse(entry.Path);
+            var defaultName = address?.ProjectFolderName ?? ProjectFile.DefaultName(entry.Path);
+            return new RecentProject(entry.Path, string.IsNullOrWhiteSpace(entry.Name) ? defaultName : entry.Name,
+                address?.ToString() ?? entry.Path);
+        }).ToArray();
+        EmptyText.Visibility = entries.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ClearHistoryButton.IsEnabled = entries.Length > 0;
     }
 
     private void ClearHistoryClick(object sender, RoutedEventArgs e)
@@ -82,10 +88,10 @@ public partial class ProjectPicker : Window
     {
         var dialog = new SshConnection { Owner = this };
         if (dialog.ShowDialog() != true || dialog.Address is not { } address) return;
-        await OpenSshAsync(address, createIfMissing: true);
+        await OpenSshAsync(address, createIfMissing: true, dialog.NewProjectName);
     }
 
-    private async Task OpenSshAsync(SshAddress address, bool createIfMissing)
+    private async Task OpenSshAsync(SshAddress address, bool createIfMissing, string? newProjectName = null)
     {
         IsEnabled = false;
         ErrorText.Text = Strings.Get("SshDownloading");
@@ -94,10 +100,12 @@ public partial class ProjectPicker : Window
         try
         {
             remote = await Task.Run(() => SshProject.DownloadAsync(address, createIfMissing, CancellationToken.None));
-            project = createIfMissing ? ProjectFile.OpenOrCreate(remote.DirectoryPath) : ProjectFile.Open(remote.DirectoryPath);
+            project = createIfMissing
+                ? ProjectFile.OpenOrCreate(remote.DirectoryPath, () => newProjectName ?? address.ProjectFolderName)!
+                : ProjectFile.Open(remote.DirectoryPath);
             await Task.Run(() => remote.SaveAsync(CancellationToken.None));
             ShowProject(project, remote);
-            RecentProjectList.Remember(address.HistoryKey);
+            RecentProjectList.Remember(address.HistoryKey, project.Name);
         }
         catch (Exception error)
         {
@@ -113,7 +121,8 @@ public partial class ProjectPicker : Window
         ProjectFile? project = null;
         try
         {
-            project = createIfMissing ? ProjectFile.OpenOrCreate(path) : ProjectFile.Open(path);
+            project = createIfMissing ? ProjectFile.OpenOrCreate(path, () => AskProjectName(path)) : ProjectFile.Open(path);
+            if (project is null) return;
             ShowProject(project);
         }
         catch (Exception error)
@@ -122,7 +131,13 @@ public partial class ProjectPicker : Window
             ErrorText.Text = error.Message;
             return;
         }
-        RecentProjectList.Remember(project.DirectoryPath);
+        RecentProjectList.Remember(project.DirectoryPath, project.Name);
+    }
+
+    private string? AskProjectName(string path)
+    {
+        var dialog = new ProjectNameDialog(ProjectFile.DefaultName(path), creating: true) { Owner = this };
+        return dialog.ShowDialog() == true ? dialog.ProjectName : null;
     }
 
     private void ShowProject(ProjectFile project, SshProject? remote = null)

@@ -81,7 +81,20 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="{DynamicResource UiArchiveHeading}" FontSize="28" FontWeight="SemiBold" Margin="0,2,0,16" />
+        <Grid Margin="0,2,0,16" HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="ProjectNameText" FontSize="28" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                       ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" VerticalAlignment="Center" />
+            <Button x:Name="RenameProjectButton" Grid.Column="1" Click="RenameProjectClick" Style="{StaticResource IconButton}"
+                    ToolTip="{DynamicResource UiRenameProject}" AutomationProperties.Name="{DynamicResource UiRenameProject}" Margin="10,0,0,0">
+                <Path Width="16" Height="16" Stretch="Uniform" Stroke="{StaticResource Accent}" StrokeThickness="1.6"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                      Data="M 3,13 L 13,3 L 17,7 L 7,17 L 3,17 Z M 11,5 L 15,9" />
+            </Button>
+        </Grid>
 
         <DockPanel Grid.Row="1" Margin="0,0,0,12">
             <Button DockPanel.Dock="Right" Content="{DynamicResource UiCloseProject}" Click="CloseProjectClick"

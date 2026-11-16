@@ -53,6 +53,7 @@ public partial class MainWindow : Window
             Servers.SelectedIndex = 0;
         }
         SetChannelRows();
+        ProjectNameText.Text = project.Name ?? remote?.ProjectFolderName ?? ProjectFile.DefaultName(project.DirectoryPath);
         ProjectPathText.Text = remote?.RemotePath ?? project.DirectoryPath;
         ProjectPathText.ToolTip = remote is null ? project.DirectoryPath : Strings.Get("SshWorkingCopy", project.DirectoryPath);
         SshSaveButton.Visibility = remote is null ? Visibility.Collapsed : Visibility.Visible;
@@ -159,6 +160,7 @@ public partial class MainWindow : Window
             : configuring && discord is not null && Servers.SelectedItem is DiscordServer && selected > 0;
         CheckButton.IsEnabled = CanCheckArchive;
         SshSaveButton.IsEnabled = !Busy;
+        RenameProjectButton.IsEnabled = !Busy;
         WebUiCheckBox.IsEnabled = !Busy;
         AuthorizationCheckBox.IsEnabled = AuthorizationSettingsButton.IsEnabled = !Busy;
         AuthorizationSettingsButton.Visibility = AuthorizationCheckBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
@@ -507,6 +509,29 @@ public partial class MainWindow : Window
     }
 
     private void OpenProjectFolderClick(object sender, RoutedEventArgs e) => App.OpenInShell(this, project.DirectoryPath);
+
+    private async void RenameProjectClick(object sender, RoutedEventArgs e)
+    {
+        if (Busy) return;
+        var dialog = new ProjectNameDialog(ProjectNameText.Text, creating: false) { Owner = this };
+        if (dialog.ShowDialog() != true || dialog.ProjectName == ProjectNameText.Text) return;
+        try
+        {
+            project.Rename(dialog.ProjectName);
+            ProjectNameText.Text = dialog.ProjectName;
+            RecentProjectList.Remember(remote?.HistoryKey ?? project.DirectoryPath, project.Name);
+            if (remote is not null)
+                await RunAsync(Strings.Get("SshSaving"), async cancellation =>
+                {
+                    await remote.SaveProjectNameAsync(cancellation);
+                    return Strings.Get("SshSaved");
+                }, message => message);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(this, error.Message, Strings.Get("UiRenameProject"), MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
     private void AuthorizationClick(object sender, RoutedEventArgs e)
     {

@@ -137,6 +137,11 @@
   <data name="UiNoRecentProjects" xml:space="preserve"><value>Здесь появятся открытые проекты.</value></data>
   <data name="UiOpenProject" xml:space="preserve"><value>Создать или открыть</value></data>
   <data name="UiRecentProjects" xml:space="preserve"><value>Последние проекты</value></data>
+  <data name="UiProjectName" xml:space="preserve"><value>Имя проекта</value></data>
+  <data name="UiNewProjectName" xml:space="preserve"><value>Имя нового проекта</value></data>
+  <data name="UiRenameProject" xml:space="preserve"><value>Переименовать проект</value></data>
+  <data name="UiSaveProjectName" xml:space="preserve"><value>Сохранить имя</value></data>
+  <data name="ProjectNameRequired" xml:space="preserve"><value>Введите имя проекта.</value></data>
   <data name="UiRequestIntervals" xml:space="preserve"><value>Интервалы запросов</value></data>
   <data name="UiSelectAll" xml:space="preserve"><value>Отметить видимые</value></data>
   <data name="UiSelectServer" xml:space="preserve"><value>Выберите сервер</value></data>
@@ -209,7 +214,8 @@
   <data name="DesktopOAuthRedirect" xml:space="preserve"><value>Для архива настроен публичный Redirect URI. Откройте развёрнутый просмотрщик по публичному адресу. Для локального просмотра укажите, например, http://127.0.0.1:8080/auth/callback.</value></data>
   <data name="UiOpenSshProject" xml:space="preserve"><value>Открыть или создать по SSH</value></data>
   <data name="UiOpenSshShort" xml:space="preserve"><value>По SSH…</value></data>
-  <data name="UiSshInstructions" xml:space="preserve"><value>Подключение к серверу с SFTP. Вход выполняется по ключу OpenSSH или через ssh-agent. Перед первым подключением проверьте ключ сервера в OpenSSH.</value></data>
+  <data name="UiSshInstructions" xml:space="preserve"><value>Для подключения к серверу с SFTP используйте ключ OpenSSH. Ключ с парольной фразой сначала загрузите в ssh-agent. Перед подключением добавьте проверенный ключ сервера в known_hosts.</value></data>
+  <data name="UiNewSshProjectName" xml:space="preserve"><value>Имя нового проекта (необязательно)</value></data>
   <data name="UiSshHost" xml:space="preserve"><value>Сервер или IPv4-адрес</value></data>
   <data name="UiSshUser" xml:space="preserve"><value>Имя пользователя SSH</value></data>
   <data name="UiSshPort" xml:space="preserve"><value>Порт</value></data>

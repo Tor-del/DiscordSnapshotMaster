@@ -137,6 +137,11 @@
   <data name="UiNoRecentProjects" xml:space="preserve"><value>Projects you open will appear here.</value></data>
   <data name="UiOpenProject" xml:space="preserve"><value>Create or Open</value></data>
   <data name="UiRecentProjects" xml:space="preserve"><value>Recent Projects</value></data>
+  <data name="UiProjectName" xml:space="preserve"><value>Project name</value></data>
+  <data name="UiNewProjectName" xml:space="preserve"><value>Name the new project</value></data>
+  <data name="UiRenameProject" xml:space="preserve"><value>Rename project</value></data>
+  <data name="UiSaveProjectName" xml:space="preserve"><value>Save name</value></data>
+  <data name="ProjectNameRequired" xml:space="preserve"><value>Enter a project name.</value></data>
   <data name="UiRequestIntervals" xml:space="preserve"><value>Request Intervals</value></data>
   <data name="UiSelectAll" xml:space="preserve"><value>Check Visible</value></data>
   <data name="UiSelectServer" xml:space="preserve"><value>Select a server</value></data>
@@ -209,7 +214,8 @@
   <data name="DesktopOAuthRedirect" xml:space="preserve"><value>This archive uses a public OAuth2 redirect. Open the deployed web viewer at the public address. For local viewing, configure a loopback redirect such as http://127.0.0.1:8080/auth/callback.</value></data>
   <data name="UiOpenSshProject" xml:space="preserve"><value>Open or create over SSH</value></data>
   <data name="UiOpenSshShort" xml:space="preserve"><value>Over SSH…</value></data>
-  <data name="UiSshInstructions" xml:space="preserve"><value>Use a server with SFTP enabled and sign in with an OpenSSH key or ssh-agent. Verify the host key in OpenSSH before the first connection.</value></data>
+  <data name="UiSshInstructions" xml:space="preserve"><value>Use an OpenSSH key for a server with SFTP enabled. Load passphrase-protected keys into ssh-agent first. Add the verified server key to known_hosts before connecting.</value></data>
+  <data name="UiNewSshProjectName" xml:space="preserve"><value>Name for a new project (optional)</value></data>
   <data name="UiSshHost" xml:space="preserve"><value>Host or IPv4 address</value></data>
   <data name="UiSshUser" xml:space="preserve"><value>SSH username</value></data>
   <data name="UiSshPort" xml:space="preserve"><value>Port</value></data>
