@@ -1,6 +1,7 @@
 import argparse
 from contextlib import closing
 from hashlib import sha256
+from html import escape
 import json
 import logging
 from pathlib import Path
@@ -74,7 +75,7 @@ def project_name(archive):
     except (OSError, ValueError):
         return None
     name = manifest.get("Name") if isinstance(manifest, dict) else None
-    return name.strip() or None if isinstance(name, str) else None
+    return (name.strip() or None) if isinstance(name, str) else None
 
 
 def read_snapshot(db, direct_hidden=(), hidden=(), admin=False):
@@ -240,7 +241,11 @@ class ArchiveHandler(BaseHTTPRequestHandler):
     def public_file(self, path):
         if path in STATIC:
             name, kind = STATIC[path]
-            self.send_data((HERE / name).read_bytes(), kind)
+            data = (HERE / name).read_bytes()
+            if path == "/" and (title := project_name(self.server.archive)):
+                title_tag = f"<title>{escape(title)}</title>".encode("utf-8")
+                data = data.replace(b"<title>APEX DSM</title>", title_tag, 1)
+            self.send_data(data, kind)
         else:
             try:
                 self.send_data(self.server.emoji.read(TWEMOJI_PATH.fullmatch(path)[1]), "image/png")

@@ -123,15 +123,22 @@ class ViewerAuthorizationTests(unittest.TestCase):
 
     def test_project_name_follows_manifest(self):
         manifest = self.archive / "project.json"
+        self.assertIn(b"<title>APEX DSM</title>", self.request("/")[2])
+        name = "Архив & </title><script>"
+        manifest.write_text(json.dumps({"Name": name, "Settings": {"Token": "test-token"}}), encoding="utf-8")
+        status, _, page = self.request("/")
+        self.assertEqual(status, 200)
+        self.assertIn("<title>Архив &amp; &lt;/title&gt;&lt;script&gt;</title>", page.decode("utf-8"))
+        self.assertNotIn(b"test-token", page)
+        self.assertEqual(self.request("/api/snapshot")[0], 401)
         viewer = self.login("101")
-        self.assertIsNone(self.request("/api/snapshot", viewer)[2]["projectName"])
-        manifest.write_text(json.dumps({"Name": "Архив & копия", "Settings": {"Token": "test-token"}}), encoding="utf-8")
         status, _, snapshot = self.request("/api/snapshot", viewer)
         self.assertEqual(status, 200)
-        self.assertEqual(snapshot["projectName"], "Архив & копия")
+        self.assertEqual(snapshot["projectName"], name)
         self.assertNotIn("test-token", json.dumps(snapshot))
         self.assertEqual(self.request("/project.json", viewer)[0], 404)
         manifest.write_text('{"Name":"Renamed"}', encoding="utf-8")
+        self.assertIn(b"<title>Renamed</title>", self.request("/")[2])
         self.assertEqual(self.request("/api/snapshot", viewer)[2]["projectName"], "Renamed")
 
     def test_permissions_and_deletion(self):
